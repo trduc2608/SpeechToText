@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "390637581029",
+    "project_id": "speech-to-text-9dc70",
+    "storage_bucket": "speech-to-text-9dc70.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:390637581029:android:a423db1cc17cab2f5eda0c",
+        "android_client_info": {
+          "package_name": "com.example.sttapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC02PZH-edu2JOd5Dm3XoYcfHOIzVe4oK4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
