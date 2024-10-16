@@ -79,6 +79,25 @@
                 android:layout_gravity="center" />
         </LinearLayout>
 
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/voice"
+            android:padding="4dp"
+            android:id="@+id/idIVMic"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="@string/say_something"
+            android:textColor="@color/colorPrimaryDark"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:textAlignment="center"/>
+
         <!-- Text Input Section -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_marginStart="20dp"
@@ -95,7 +114,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:id="@+id/idEditSource"
-                android:hint="Enter Text"
+                android:hint="@string/enter_text"
                 android:ems="10"
                 android:importantForAutofill="no"
                 android:inputType="textImeMultiLine|textMultiLine"
@@ -106,11 +125,23 @@
                 android:textColorHint="@color/colorSecondary" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:id="@+id/idBtnTranslation"
+            android:text="Translate"
+            android:textSize="19sp"
+            android:textAllCaps="false"/>
+
+
+
+
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/idTranslateTV"
-            android:text="Translated text here"
+            android:text="@string/translated_text_here"
             android:background="@drawable/background"
             android:elevation="3dp"
             android:layout_marginTop="10dp"
@@ -124,23 +155,6 @@
             android:letterSpacing="0.03"
             android:visibility="gone"/>
 
-        <ImageView
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:src="@drawable/voice"
-            android:padding="4dp"
-            android:id="@+id/idIVMic"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:text="Say something"
-            android:textColor="@color/colorPrimaryDark"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
-            android:textAlignment="center"/>
     </LinearLayout>
 </ScrollView>
