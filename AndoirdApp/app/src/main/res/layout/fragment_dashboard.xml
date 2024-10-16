@@ -4,13 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.dashboard.DashboardFragment">
+    tools:context=".ui.dashboard.DashboardFragment"
+    android:background="@color/offWhite">
 
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:paddingBottom="20dp">
 
+        <!-- Header Section -->
         <LinearLayout
             android:orientation="vertical"
             android:layout_marginStart="20dp"
@@ -25,7 +28,7 @@
                 android:layout_height="30dp"
                 android:src="@drawable/translate"
                 android:layout_gravity="center"
-                android:layout_marginEnd="4dp"/>
+                android:layout_marginEnd="4dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -35,10 +38,10 @@
                 android:textStyle="bold"
                 android:layout_marginStart="4dp"
                 android:textSize="23sp"
-                android:layout_gravity="center"/>
-            
+                android:layout_gravity="center" />
         </LinearLayout>
-        
+
+        <!-- Spinner Section -->
         <LinearLayout
             android:orientation="horizontal"
             android:layout_marginStart="20dp"
@@ -46,7 +49,9 @@
             android:layout_marginTop="40dp"
             android:weightSum="3"
             android:layout_width="match_parent"
-            android:layout_height="60dp">
+            android:layout_height="60dp"
+            android:background="@drawable/background"
+            android:elevation="4dp">
 
             <Spinner
                 android:layout_width="0dp"
@@ -55,14 +60,14 @@
                 android:id="@+id/idFromSpinner"
                 android:padding="3dp"
                 android:layout_margin="3dp"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center" />
 
             <ImageView
                 android:layout_width="0dp"
                 android:layout_height="35dp"
                 android:layout_weight="1"
                 android:src="@drawable/transfer"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center" />
 
             <Spinner
                 android:layout_width="0dp"
@@ -71,8 +76,71 @@
                 android:id="@+id/idToSpinner"
                 android:padding="3dp"
                 android:layout_margin="3dp"
-                android:layout_gravity="center"/>
-
+                android:layout_gravity="center" />
         </LinearLayout>
+
+        <!-- Text Input Section -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="20dp"
+            android:padding="5dp"
+            app:hintEnabled="false"
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            app:boxBackgroundMode="none"
+            android:elevation="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/idEditSource"
+                android:hint="Enter Text"
+                android:ems="10"
+                android:importantForAutofill="no"
+                android:inputType="textImeMultiLine|textMultiLine"
+                android:textColor="@color/black"
+                android:textSize="19sp"
+                android:gravity="top"
+                android:background="@drawable/edit_text_border"
+                android:textColorHint="@color/colorSecondary" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/idTranslateTV"
+            android:text="Translated text here"
+            android:background="@drawable/background"
+            android:elevation="3dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_gravity="center"
+            android:textAlignment="center"
+            android:padding="16sp"
+            android:textSize="16sp"
+            android:textColor="@color/colorPrimary"
+            android:letterSpacing="0.03"
+            android:visibility="gone"/>
+
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/voice"
+            android:padding="4dp"
+            android:id="@+id/idIVMic"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="16sp"
+            android:text="Say something"
+            android:textColor="@color/colorPrimaryDark"
+            android:layout_gravity="center"
+            android:layout_marginTop="20dp"
+            android:textAlignment="center"/>
     </LinearLayout>
 </ScrollView>
