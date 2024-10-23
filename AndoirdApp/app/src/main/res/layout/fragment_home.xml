@@ -21,8 +21,25 @@
             android:id="@+id/IVMic"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
-            android:background="@drawable/edit_text_border"
-            />
+            android:background="@drawable/edit_text_border"/>
+
+        <!-- Language Selection Spinner -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/select_the_language_you_want_to_record"
+            android:layout_marginTop="10dp"
+            android:textAlignment="center"
+            android:textSize="16sp"
+            android:letterSpacing="0.03"
+            android:textColor="@color/black"/>
+
+        <Spinner
+            android:id="@+id/languageSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:entries="@array/languages_array" />
 
         <TextView
             android:layout_width="match_parent"

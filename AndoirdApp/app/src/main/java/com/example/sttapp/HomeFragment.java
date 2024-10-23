@@ -11,7 +11,9 @@ import android.speech.SpeechRecognizer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,10 +29,12 @@ import java.util.Locale;
 public class HomeFragment extends Fragment {
 
     private SpeechRecognizer speechRecognizer;
+    private Spinner languageSpinner;
     private TextView textView;
     private ImageView ivMic;
     private boolean isRecording = false;
     private long lastClickTime = 0;
+    private String selectedLanguage = "en-US";
     private static final int REQUEST_CODE_PERMISSION = 1;
 
     @Override
@@ -39,6 +43,7 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+        languageSpinner = view.findViewById(R.id.languageSpinner);
         ivMic = view.findViewById(R.id.IVMic);
         textView = view.findViewById(R.id.textstore);
 
@@ -46,6 +51,22 @@ public class HomeFragment extends Fragment {
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext());
 
         checkAndRequestPermissions();
+
+        languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(position!= 0) {
+                    selectedLanguage = "en-US";
+                } else {
+                    selectedLanguage = "vi-VN";
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
 
         // Set up the listener with debounce
         ivMic.setOnClickListener(v -> {
@@ -94,8 +115,8 @@ public class HomeFragment extends Fragment {
 
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault()); // Default to device language
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, selectedLanguage); // Default to device language
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, selectedLanguage);
 
         // For Vietnamese and English
         String[] supportedLanguages  = new String[]{"en-US", "vi-VN"}; // Use "vi" for Vietnamese or "en" for English, depending on need
