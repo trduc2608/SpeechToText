@@ -55,7 +55,7 @@ public class HomeFragment extends Fragment {
         languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(position!= 0) {
+                if(position == 0) {
                     selectedLanguage = "en-US";
                 } else {
                     selectedLanguage = "vi-VN";
@@ -115,10 +115,9 @@ public class HomeFragment extends Fragment {
 
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, selectedLanguage); // Default to device language
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, selectedLanguage); // Set selected language
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, selectedLanguage);
-
-        intent.putExtra(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES, selectedLanguage);;
+        
 
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
