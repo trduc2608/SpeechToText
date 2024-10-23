@@ -60,7 +60,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void toggleSpeechRecognition() {
-        if (isListening) {
+        if (isRecording) {
             stopListening();
         } else {
             startListening();
@@ -159,6 +159,14 @@ public class HomeFragment extends Fragment {
         speechRecognizer.startListening(intent);
         isRecording = true;
         textView.setText("Listening... Click to stop");
+    }
+
+    private void stopListening() {
+        if(isRecording && speechRecognizer != null) {
+            speechRecognizer.stopListening();
+            textView.setText("Stopped listening. Click to start again");
+            isRecording = false;
+        }
     }
 
     // Map error codes to user-friendly messages
