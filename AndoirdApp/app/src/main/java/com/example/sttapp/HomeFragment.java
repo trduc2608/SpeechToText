@@ -29,6 +29,7 @@ public class HomeFragment extends Fragment {
     private SpeechRecognizer speechRecognizer;
     private TextView textView;
     private ImageView ivMic;
+    private boolean isRecording = false;
     private long lastClickTime = 0;
     private static final int REQUEST_CODE_PERMISSION = 1;
 
@@ -53,9 +54,17 @@ public class HomeFragment extends Fragment {
                 return;
             }
             lastClickTime = SystemClock.elapsedRealtime();
-            startListening();
+            toggleSpeechRecognition();
         });
         return view;
+    }
+
+    private void toggleSpeechRecognition() {
+        if (isListening) {
+            stopListening();
+        } else {
+            startListening();
+        }
     }
 
     private void checkAndRequestPermissions() {
@@ -122,6 +131,7 @@ public class HomeFragment extends Fragment {
             public void onError(int error) {
                 String message = getErrorMessage(error);
                 textView.setText(message);
+                isRecording = false;
             }
 
             @Override
@@ -132,6 +142,7 @@ public class HomeFragment extends Fragment {
                 } else {
                     textView.setText("No speech recognized, try again.");
                 }
+                isRecording = false;
             }
 
             @Override
@@ -146,6 +157,8 @@ public class HomeFragment extends Fragment {
         });
 
         speechRecognizer.startListening(intent);
+        isRecording = true;
+        textView.setText("Listening... Click to stop");
     }
 
     // Map error codes to user-friendly messages
