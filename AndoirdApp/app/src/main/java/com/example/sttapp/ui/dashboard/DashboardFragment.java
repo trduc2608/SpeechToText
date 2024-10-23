@@ -1,5 +1,6 @@
 package com.example.sttapp.ui.dashboard;
 
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -29,25 +30,15 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 public class DashboardFragment extends Fragment {
-
     private FragmentDashboardBinding binding;
-    private Spinner fromSpinner, toSpinner;
-    private TextInputEditText sourceText;
-    private ImageView micIV;
-    private MaterialButton translateBtn;
-    private TextView translateTV;
+    private static final int REQUEST_CODE_SPEECH_INPUT = 1000;
 
+    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        // Sử dụng View Binding để ràng buộc giao diện với fragment
         binding = FragmentDashboardBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
-        fromSpinner = binding.idFromSpinner;
-        toSpinner = binding.idToSpinner;
-        sourceText = binding.idEditSource;
-        micIV = binding.idIVMic;
-        translateBtn = binding.idBtnTranslation;
-        translateTV = binding.idTranslateTV;
 
         return root;
     }

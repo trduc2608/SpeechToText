@@ -12,6 +12,7 @@
     <string name="translated_text_here">Translated text here</string>
     <string name="enter_text">Enter Text</string>
     <string name="say_something_to_show_text">Say something to show text</string>
+    <string name="start_listening">Start listening</string>
     <string-array name="languages_array">
         <item>English</item>
         <item>Vietnamese</item>

@@ -99,31 +99,17 @@
             android:textAlignment="center"/>
 
         <!-- Text Input Section -->
-        <com.google.android.material.textfield.TextInputLayout
+        <TextView
             android:layout_marginStart="20dp"
             android:layout_marginTop="20dp"
             android:layout_marginEnd="20dp"
             android:padding="5dp"
-            app:hintEnabled="false"
+            android:hint="@string/start_listening"
             android:layout_width="match_parent"
             android:layout_height="250dp"
             app:boxBackgroundMode="none"
             android:elevation="8dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/idEditSource"
-                android:hint="@string/enter_text"
-                android:ems="10"
-                android:importantForAutofill="no"
-                android:inputType="textImeMultiLine|textMultiLine"
-                android:textColor="@color/black"
-                android:textSize="19sp"
-                android:gravity="top"
-                android:background="@drawable/edit_text_border"
-                android:textColorHint="@color/colorSecondary" />
-        </com.google.android.material.textfield.TextInputLayout>
+        </TextView>
 
         <com.google.android.material.button.MaterialButton
             android:layout_width="match_parent"
@@ -133,9 +119,6 @@
             android:text="Translate"
             android:textSize="19sp"
             android:textAllCaps="false"/>
-
-
-
 
         <TextView
             android:layout_width="match_parent"
