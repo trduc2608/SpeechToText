@@ -107,9 +107,10 @@
             android:hint="@string/start_listening"
             android:layout_width="match_parent"
             android:layout_height="250dp"
-            app:boxBackgroundMode="none"
+            android:background="@drawable/edit_text_border"
             android:elevation="8dp">
-        </TextView>
+
+    </TextView>
 
         <com.google.android.material.button.MaterialButton
             android:layout_width="match_parent"
@@ -121,6 +122,10 @@
             android:textAllCaps="false"/>
 
         <TextView
+
+
+
+
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/idTranslateTV"
