@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -27,6 +28,8 @@ public class HomeFragment extends Fragment {
 
     private SpeechRecognizer speechRecognizer;
     private TextView textView;
+    private ImageView ivMic;
+    private long lastClickTime = 0;
     private static final int REQUEST_CODE_PERMISSION = 1;
 
     @Override
@@ -35,23 +38,30 @@ public class HomeFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
-        // Check for permission in onViewCreated
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            // Request the permission if it hasn't been granted
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_CODE_PERMISSION);
-        } else {
-            // Permission has already been granted, you can start your logic here
-        }
-
-        ImageView ivMic = view.findViewById(R.id.IVMic);
+        ivMic = view.findViewById(R.id.IVMic);
         textView = view.findViewById(R.id.textstore);
 
         // Initialize Speech Recognizer
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext());
 
-        // Set up the listener
-        ivMic.setOnClickListener(v -> startListening());
+        checkAndRequestPermissions();
+
+        // Set up the listener with debounce
+        ivMic.setOnClickListener(v -> {
+            if (SystemClock.elapsedRealtime() - lastClickTime < 1000) {
+                // Prevent multiple clicks within a 1-second interval
+                return;
+            }
+            lastClickTime = SystemClock.elapsedRealtime();
+            startListening();
+        });
         return view;
+    }
+
+    private void checkAndRequestPermissions() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_CODE_PERMISSION);
+        }
     }
 
     @Override
@@ -68,14 +78,19 @@ public class HomeFragment extends Fragment {
     }
 
     private void startListening() {
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(requireContext(), "Please grant audio permission", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault()); // Default to device language
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, Locale.getDefault());
 
         // For Vietnamese and English
-        String languagePreference = "vi"; // Use "vi" for Vietnamese or "en" for English, depending on need
-        intent.putExtra(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES, new String[]{"en", "vi"});
+        String[] supportedLanguages  = new String[]{"en-US", "vi-VN"}; // Use "vi" for Vietnamese or "en" for English, depending on need
+        intent.putExtra(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES, supportedLanguages);;
 
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
@@ -100,19 +115,22 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onEndOfSpeech() {
-
+                textView.setText("Processing...");
             }
 
             @Override
             public void onError(int error) {
-                textView.setText("Error occurred: " + error);
+                String message = getErrorMessage(error);
+                textView.setText(message);
             }
 
             @Override
             public void onResults(Bundle results) {
                 ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 if (matches != null && !matches.isEmpty()) {
-                    textView.setText(matches.get(0)); // Display the first result
+                    textView.setText(matches.get(0)); // Display the first recognized result
+                } else {
+                    textView.setText("No speech recognized, try again.");
                 }
             }
 
@@ -127,8 +145,42 @@ public class HomeFragment extends Fragment {
             }
         });
 
-
-
         speechRecognizer.startListening(intent);
+    }
+
+    // Map error codes to user-friendly messages
+    private String getErrorMessage(int errorCode) {
+        switch (errorCode) {
+            case SpeechRecognizer.ERROR_AUDIO:
+                return "Audio recording error";
+            case SpeechRecognizer.ERROR_CLIENT:
+                return "Client-side error";
+            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+                return "Insufficient permissions";
+            case SpeechRecognizer.ERROR_NETWORK:
+                return "Network error";
+            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+                return "Network timeout";
+            case SpeechRecognizer.ERROR_NO_MATCH:
+                return "No speech recognized";
+            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                return "Recognition service busy";
+            case SpeechRecognizer.ERROR_SERVER:
+                return "Server error";
+            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                return "No speech input detected";
+            default:
+                return "Unknown error occurred";
+        }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (speechRecognizer != null) {
+            speechRecognizer.stopListening();
+            speechRecognizer.destroy();  // Release resources
+            speechRecognizer = null;
+        }
     }
 }
