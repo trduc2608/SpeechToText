@@ -118,9 +118,7 @@ public class HomeFragment extends Fragment {
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, selectedLanguage); // Default to device language
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, selectedLanguage);
 
-        // For Vietnamese and English
-        String[] supportedLanguages  = new String[]{"en-US", "vi-VN"}; // Use "vi" for Vietnamese or "en" for English, depending on need
-        intent.putExtra(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES, supportedLanguages);;
+        intent.putExtra(RecognizerIntent.EXTRA_SUPPORTED_LANGUAGES, selectedLanguage);;
 
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
