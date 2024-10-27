@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".DashboardFragment"
     android:background="@color/offWhite">
 
@@ -79,44 +80,47 @@
         </LinearLayout>
 
         <ImageView
-            android:layout_width="70dp"
-            android:layout_height="70dp"
-            android:src="@drawable/voice"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/microphone"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"
             android:padding="4dp"
             android:id="@+id/idIVMic"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:text="@string/say_something"
-            android:textColor="@color/colorPrimaryDark"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
-            android:textAlignment="center"/>
+            android:layout_gravity="center"/>
 
         <!-- Text Input Section -->
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
             android:layout_marginEnd="20dp"
             android:padding="5dp"
-            android:hint="@string/start_listening"
+            app:hintEnabled="false"
             android:layout_width="match_parent"
-            android:layout_height="250dp"
-            android:background="@drawable/edit_text_border"
+            android:layout_height="wrap_content"
+            app:boxBackgroundMode="none"
             android:elevation="8dp">
 
-        </TextView>
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/inputTrans"
+                android:hint="@string/enter_text_or_say_something"
+                android:ems="10"
+                android:importantForAutofill="no"
+                android:inputType="textImeMultiLine|textMultiLine"
+                android:textColor="@color/colorPrimary"
+                android:textSize="19sp"
+                android:textAlignment="center"
+                android:background="@drawable/background"
+                android:textColorHint="@color/colorPrimary"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="20dp"
             android:id="@+id/idBtnTranslation"
-            android:text="Translate"
+            android:text="@string/translate"
             android:textSize="19sp"
             android:textAllCaps="false"/>
 
@@ -124,7 +128,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/idTranslateTV"
-            android:text="@string/translated_text_here"
+            android:hint="@string/translated_text_here"
             android:background="@drawable/background"
             android:elevation="3dp"
             android:layout_marginTop="10dp"
@@ -134,8 +138,7 @@
             android:textAlignment="center"
             android:padding="16sp"
             android:textSize="16sp"
-            android:textColor="@color/colorPrimary"
-            android:letterSpacing="0.03"
-            android:visibility="gone"/>
+            android:textColorHint="@color/colorPrimary"
+            android:letterSpacing="0.03"/>
     </LinearLayout>
 </ScrollView>

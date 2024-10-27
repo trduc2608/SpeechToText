@@ -16,6 +16,7 @@
     <string name="home">Home</string>
     <string name="dashboard">Dashboard</string>
     <string name="select_the_language_you_want_to_record">Select the language you want to record</string>
+    <string name="enter_text_or_say_something">Enter text or Say something</string>
     <string-array name="languages_array">
         <item>English</item>
         <item>Vietnamese</item>

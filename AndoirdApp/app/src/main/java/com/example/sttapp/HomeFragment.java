@@ -117,7 +117,7 @@ public class HomeFragment extends Fragment {
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, selectedLanguage); // Set selected language
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, selectedLanguage);
-        
+
 
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
