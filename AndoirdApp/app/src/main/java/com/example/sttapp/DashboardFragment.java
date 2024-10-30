@@ -39,7 +39,7 @@ public class DashboardFragment extends Fragment {
     private MaterialButton idBtnTranslation;
     private Spinner idFromSpinner, idToSpinner;
     private TextInputEditText inputTrans;
-    private ImageView ivMic;
+    private ImageView ivMic, ivSwap;
     private TextView translatedTextView;
     private boolean isListening = false;
     private static final int REQUEST_CODE_PERMISSION = 1;
@@ -58,7 +58,7 @@ public class DashboardFragment extends Fragment {
         translatedTextView = view.findViewById(R.id.idTranslateTV);
         idBtnTranslation = view.findViewById(R.id.idBtnTranslation);
         ivMic = view.findViewById(R.id.idIVMic);
-
+        ivSwap = view.findViewById(R.id.ivSwap);
         // Initialize Speech Recognizer
         speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext());
         checkAndRequestPermissions();
@@ -80,7 +80,20 @@ public class DashboardFragment extends Fragment {
 
         idBtnTranslation.setOnClickListener(v -> prepareTranslation());
 
+        // Add click listener for swap functionality
+        ivSwap.setOnClickListener(v -> swapSpinnerSelections());
+
         return view;
+    }
+
+    private void swapSpinnerSelections() {
+        // Get the current selections
+        int fromLangPosition = idFromSpinner.getSelectedItemPosition();
+        int toLangPosition = idToSpinner.getSelectedItemPosition();
+
+        // Swap the selections
+        idFromSpinner.setSelection(toLangPosition);
+        idToSpinner.setSelection(fromLangPosition);
     }
 
     private void prepareTranslation() {
@@ -133,6 +146,8 @@ public class DashboardFragment extends Fragment {
                 return TranslateLanguage.JAPANESE;
             case "Korean":
                 return TranslateLanguage.KOREAN;
+            case "Chinese":
+                return TranslateLanguage.CHINESE;
             default:
                 return TranslateLanguage.ENGLISH; // Default
         }
@@ -165,30 +180,7 @@ public class DashboardFragment extends Fragment {
 
     private void startListening() {
         String selectedLanguage = getLanguageCode(idFromSpinner.getSelectedItem().toString());
-        Locale locale;
-        switch (selectedLanguage) {
-            case TranslateLanguage.VIETNAMESE:
-                locale = new Locale("vi");
-                break;
-            case TranslateLanguage.ENGLISH:
-                locale = Locale.ENGLISH;
-                break;
-            case TranslateLanguage.GERMAN:
-                locale = Locale.GERMAN;
-                break;
-            case TranslateLanguage.JAPANESE:
-                locale = Locale.JAPANESE;
-                break;
-            case TranslateLanguage.KOREAN:
-                locale = Locale.KOREAN;
-                break;
-            case TranslateLanguage.CHINESE:
-                locale = Locale.SIMPLIFIED_CHINESE;
-                break;
-            default:
-                locale = Locale.ENGLISH; // Default
-                break;
-        }
+        Locale locale = getLocale(selectedLanguage);
 
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
@@ -202,17 +194,17 @@ public class DashboardFragment extends Fragment {
 
             @Override
             public void onBeginningOfSpeech() {
-                // Optional
+
             }
 
             @Override
             public void onRmsChanged(float rmsdB) {
-                // Optional
+
             }
 
             @Override
             public void onBufferReceived(byte[] buffer) {
-                // Optional
+
             }
 
             @Override
@@ -239,17 +231,36 @@ public class DashboardFragment extends Fragment {
 
             @Override
             public void onPartialResults(Bundle partialResults) {
-                // Optional
+
             }
 
             @Override
             public void onEvent(int eventType, Bundle params) {
-                // Optional
+
             }
         });
 
         speechRecognizer.startListening(intent);
         isListening = true;
+    }
+
+    private Locale getLocale(String selectedLanguage) {
+        switch (selectedLanguage) {
+            case TranslateLanguage.VIETNAMESE:
+                return new Locale("vi");
+            case TranslateLanguage.ENGLISH:
+                return Locale.ENGLISH;
+            case TranslateLanguage.GERMAN:
+                return Locale.GERMAN;
+            case TranslateLanguage.JAPANESE:
+                return Locale.JAPANESE;
+            case TranslateLanguage.KOREAN:
+                return Locale.KOREAN;
+            case TranslateLanguage.CHINESE:
+                return Locale.SIMPLIFIED_CHINESE;
+            default:
+                return Locale.ENGLISH;
+        }
     }
 
     private void stopListening() {

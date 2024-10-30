@@ -55,11 +55,8 @@ public class HomeFragment extends Fragment {
         languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if(position == 0) {
-                    selectedLanguage = "en-US";
-                } else {
-                    selectedLanguage = "vi-VN";
-                }
+                String selectedLanguageText = parent.getItemAtPosition(position).toString();
+                selectedLanguage = getLanguageCode(selectedLanguageText); // Map to language code
             }
 
             @Override
@@ -70,10 +67,7 @@ public class HomeFragment extends Fragment {
 
         // Set up the listener with debounce
         ivMic.setOnClickListener(v -> {
-            if (SystemClock.elapsedRealtime() - lastClickTime < 1000) {
-                // Prevent multiple clicks within a 1-second interval
-                return;
-            }
+            if (SystemClock.elapsedRealtime() - lastClickTime < 1000) return;
             lastClickTime = SystemClock.elapsedRealtime();
             toggleSpeechRecognition();
         });
@@ -98,10 +92,8 @@ public class HomeFragment extends Fragment {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (requestCode == REQUEST_CODE_PERMISSION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Permission granted
                 Toast.makeText(requireContext(), "Permission granted!", Toast.LENGTH_SHORT).show();
             } else {
-                // Permission denied
                 Toast.makeText(requireContext(), "Permission denied. The app needs audio access to work.", Toast.LENGTH_SHORT).show();
             }
         }
@@ -115,7 +107,7 @@ public class HomeFragment extends Fragment {
 
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, selectedLanguage); // Set selected language
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, selectedLanguage);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, selectedLanguage);
 
 
@@ -184,6 +176,25 @@ public class HomeFragment extends Fragment {
             speechRecognizer.stopListening();
             textView.setText("Stopped listening. Click to start again");
             isRecording = false;
+        }
+    }
+
+    private String getLanguageCode(String language) {
+        switch (language) {
+            case "Vietnamese":
+                return "vi-VN";
+            case "English":
+                return "en-US";
+            case "German":
+                return "de-DE";
+            case "Japanese":
+                return "ja-JP";
+            case "Korean":
+                return "ko-KR";
+            case "Chinese":
+                return "zh-CN"; // Simplified Chinese, change to "zh-TW" for Traditional Chinese
+            default:
+                return "en-US"; // Default to English
         }
     }
 
