@@ -25,7 +25,7 @@ import androidx.fragment.app.Fragment;
 import java.util.ArrayList;
 import java.util.Locale;
 
-
+ 
 public class HomeFragment extends Fragment {
 
     private SpeechRecognizer speechRecognizer;
