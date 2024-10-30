@@ -20,11 +20,9 @@
     <string-array name="languages_array">
         <item>English</item>
         <item>Vietnamese</item>
-        <item>Spanish</item>
-        <item>French</item>
         <item>German</item>
-        <item>Chinese</item>
         <item>Japanese</item>
         <item>Korean</item>
+        <item>Chinese</item>
     </string-array>
 </resources>

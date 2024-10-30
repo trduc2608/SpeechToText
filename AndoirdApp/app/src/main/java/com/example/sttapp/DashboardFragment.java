@@ -127,14 +127,8 @@ public class DashboardFragment extends Fragment {
                 return TranslateLanguage.VIETNAMESE;
             case "English":
                 return TranslateLanguage.ENGLISH;
-            case "Spanish":
-                return TranslateLanguage.SPANISH;
-            case "French":
-                return TranslateLanguage.FRENCH;
             case "German":
                 return TranslateLanguage.GERMAN;
-            case "Chinese":
-                return TranslateLanguage.CHINESE;
             case "Japanese":
                 return TranslateLanguage.JAPANESE;
             case "Korean":
@@ -170,9 +164,35 @@ public class DashboardFragment extends Fragment {
     }
 
     private void startListening() {
+        String selectedLanguage = getLanguageCode(idFromSpinner.getSelectedItem().toString());
+        Locale locale;
+        switch (selectedLanguage) {
+            case TranslateLanguage.VIETNAMESE:
+                locale = new Locale("vi");
+                break;
+            case TranslateLanguage.ENGLISH:
+                locale = Locale.ENGLISH;
+                break;
+            case TranslateLanguage.GERMAN:
+                locale = Locale.GERMAN;
+                break;
+            case TranslateLanguage.JAPANESE:
+                locale = Locale.JAPANESE;
+                break;
+            case TranslateLanguage.KOREAN:
+                locale = Locale.KOREAN;
+                break;
+            case TranslateLanguage.CHINESE:
+                locale = Locale.SIMPLIFIED_CHINESE;
+                break;
+            default:
+                locale = Locale.ENGLISH; // Default
+                break;
+        }
+
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault());
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale.toString());
 
         speechRecognizer.setRecognitionListener(new RecognitionListener() {
             @Override
@@ -182,17 +202,17 @@ public class DashboardFragment extends Fragment {
 
             @Override
             public void onBeginningOfSpeech() {
-
+                // Optional
             }
 
             @Override
             public void onRmsChanged(float rmsdB) {
-
+                // Optional
             }
 
             @Override
             public void onBufferReceived(byte[] buffer) {
-
+                // Optional
             }
 
             @Override
@@ -219,12 +239,12 @@ public class DashboardFragment extends Fragment {
 
             @Override
             public void onPartialResults(Bundle partialResults) {
-
+                // Optional
             }
 
             @Override
             public void onEvent(int eventType, Bundle params) {
-
+                // Optional
             }
         });
 
@@ -262,6 +282,9 @@ public class DashboardFragment extends Fragment {
             speechRecognizer.stopListening();
             speechRecognizer.destroy();
             speechRecognizer = null;
+        }
+        if (translator != null) {
+            translator.close();
         }
     }
 }
