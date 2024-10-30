@@ -127,6 +127,18 @@ public class DashboardFragment extends Fragment {
                 return TranslateLanguage.VIETNAMESE;
             case "English":
                 return TranslateLanguage.ENGLISH;
+            case "Spanish":
+                return TranslateLanguage.SPANISH;
+            case "French":
+                return TranslateLanguage.FRENCH;
+            case "German":
+                return TranslateLanguage.GERMAN;
+            case "Chinese":
+                return TranslateLanguage.CHINESE;
+            case "Japanese":
+                return TranslateLanguage.JAPANESE;
+            case "Korean":
+                return TranslateLanguage.KOREAN;
             default:
                 return TranslateLanguage.ENGLISH; // Default
         }
