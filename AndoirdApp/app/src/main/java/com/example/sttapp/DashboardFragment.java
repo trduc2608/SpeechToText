@@ -11,7 +11,10 @@ import android.speech.SpeechRecognizer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -19,7 +22,13 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.mlkit.common.model.DownloadConditions;
+import com.google.mlkit.nl.translate.TranslateLanguage;
+import com.google.mlkit.nl.translate.Translation;
+import com.google.mlkit.nl.translate.Translator;
+import com.google.mlkit.nl.translate.TranslatorOptions;
 
 import java.util.ArrayList;
 import java.util.Locale;
@@ -27,11 +36,15 @@ import java.util.Locale;
 public class DashboardFragment extends Fragment {
 
     private SpeechRecognizer speechRecognizer;
+    private MaterialButton idBtnTranslation;
+    private Spinner idFromSpinner, idToSpinner;
     private TextInputEditText inputTrans;
     private ImageView ivMic;
+    private TextView translatedTextView;
     private boolean isListening = false;
     private static final int REQUEST_CODE_PERMISSION = 1;
     private long lastClickTime = 0;
+    private Translator translator;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -39,7 +52,11 @@ public class DashboardFragment extends Fragment {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
 
+        idToSpinner = view.findViewById(R.id.idToSpinner);
+        idFromSpinner = view.findViewById(R.id.idFromSpinner);
         inputTrans = view.findViewById(R.id.inputTrans);
+        translatedTextView = view.findViewById(R.id.idTranslateTV);
+        idBtnTranslation = view.findViewById(R.id.idBtnTranslation);
         ivMic = view.findViewById(R.id.idIVMic);
 
         // Initialize Speech Recognizer
@@ -54,7 +71,65 @@ public class DashboardFragment extends Fragment {
             toggleSpeechRecognition();
         });
 
+        // Set up Spinners
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                getContext(), R.array.languages_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        idFromSpinner.setAdapter(adapter);
+        idToSpinner.setAdapter(adapter);
+
+        idBtnTranslation.setOnClickListener(v -> prepareTranslation());
+
         return view;
+    }
+
+    private void prepareTranslation() {
+        String fromLang = getLanguageCode(idFromSpinner.getSelectedItem().toString());
+        String toLang = getLanguageCode(idToSpinner.getSelectedItem().toString());
+
+        TranslatorOptions options = new TranslatorOptions.Builder()
+                .setSourceLanguage(fromLang)
+                .setTargetLanguage(toLang)
+                .build();
+        translator = Translation.getClient(options);
+
+        DownloadConditions conditions = new DownloadConditions.Builder()
+                .requireWifi()
+                .build();
+
+        translator.downloadModelIfNeeded(conditions)
+                .addOnSuccessListener(unused -> translateText())
+                .addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(), "Model download failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private void translateText() {
+        String textToTranslate = inputTrans.getText().toString();
+
+        if (textToTranslate.isEmpty()) {
+            Toast.makeText(requireContext(), "Please enter text to translate.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        translator.translate(textToTranslate)
+                .addOnSuccessListener(translatedText -> {
+                    translatedTextView.setText(translatedText);
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(requireContext(), "Translation failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    private String getLanguageCode(String language) {
+        switch (language) {
+            case "Vietnamese":
+                return TranslateLanguage.VIETNAMESE;
+            case "English":
+                return TranslateLanguage.ENGLISH;
+            default:
+                return TranslateLanguage.ENGLISH; // Default
+        }
     }
 
     private void toggleSpeechRecognition() {
