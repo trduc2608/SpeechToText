@@ -48,4 +48,23 @@ dependencies {
 
     implementation 'com.google.mlkit:translate:17.0.3'
 
+    // Other dependencies...
+    def room_version = "2.5.2"
+
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    // For Kotlin projects use kapt instead of annotationProcessor
+    // kapt "androidx.room:room-compiler:$room_version"
+
+    // Optional - RxJava2 support for Room
+    implementation "androidx.room:room-rxjava2:$room_version"
+    // Optional - RxJava3 support for Room
+    implementation "androidx.room:room-rxjava3:$room_version"
+    // Optional - Guava support for Room, including Optional and ListenableFuture
+    implementation "androidx.room:room-guava:$room_version"
+    // Optional - Paging 3 Integration
+    implementation "androidx.room:room-paging:$room_version"
+
+    // Coroutines support for Room
+    implementation "androidx.room:room-ktx:$room_version"
 }

@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingBottom="20dp"
     android:background="@color/offWhite"
+    android:layout_gravity="center"
     tools:context=".HomeFragment">
 
     <LinearLayout
@@ -19,6 +22,7 @@
             android:src="@drawable/microphone"
             android:padding="4dp"
             android:id="@+id/IVMic"
+            android:contentDescription="@string/mic_icon_desc"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:background="@drawable/edit_text_border"/>
@@ -57,7 +61,26 @@
             android:textSize="16sp"
             android:textColor="@color/colorPrimary"
             android:letterSpacing="0.03"/>
-
     </LinearLayout>
 
-</ScrollView>
+    <!-- History Section -->
+    <TextView
+        android:id="@+id/historyTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="History"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginTop="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/historyRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_marginTop="8dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:scrollbars="vertical" />
+</LinearLayout>

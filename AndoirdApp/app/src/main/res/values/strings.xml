@@ -17,6 +17,33 @@
     <string name="dashboard">Dashboard</string>
     <string name="select_the_language_you_want_to_record">Select the language you want to record</string>
     <string name="enter_text_or_say_something">Enter text or Say something</string>
+    <string name="mic_icon_desc">Microphone icon to start or stop recording.</string>
+
+    <string name="listening">Listening...</string>
+    <string name="processing">Processing...</string>
+    <string name="no_speech_recognized">No speech recognized, try again.</string>
+    <string name="stopped_listening">Stopped listening. Click to start again.</string>
+    <string name="click_to_stop">Listening... Click to stop.</string>
+    <string name="error_audio">Audio recording error.</string>
+    <string name="error_client">Client-side error.</string>
+    <string name="error_permissions">Insufficient permissions.</string>
+    <string name="error_network">Network error.</string>
+    <string name="error_network_timeout">Network timeout.</string>
+    <string name="error_no_match">No speech recognized.</string>
+    <string name="error_recognizer_busy">Recognition service busy.</string>
+    <string name="error_server">Server error.</string>
+    <string name="error_speech_timeout">No speech input detected.</string>
+    <string name="error_unknown">An unknown error occurred.</string>
+    <string name="error_starting_listening">Error starting speech recognition.</string>
+    <string name="error_initializing_speech_recognizer">Error initializing speech recognizer.</string>
+    <string name="permission_denied">Permission denied. The app needs audio access to work.</string>
+    <string name="language_not_supported">Selected language not supported, defaulting to English.</string>
+
+    <string name="enter_text_to_translate">Please enter text to translate.</string>
+    <string name="translation_failed">Translation failed: </string>
+    <string name="model_download_failed">Model download failed: </string>
+
+
     <string-array name="languages_array">
         <item>English</item>
         <item>Vietnamese</item>

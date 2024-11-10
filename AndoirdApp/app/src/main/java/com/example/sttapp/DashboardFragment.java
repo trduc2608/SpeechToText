@@ -1,6 +1,7 @@
  package com.example.sttapp;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -17,11 +18,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.sttapp.databinding.FragmentDashboardBinding;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.mlkit.common.model.DownloadConditions;
@@ -34,104 +41,191 @@ import java.util.ArrayList;
 import java.util.Locale;
  
 public class DashboardFragment extends Fragment {
+    private FragmentDashboardBinding binding;
+    private DashboardViewModel dashboardViewModel;
+    private TranslationHistoryAdapter historyAdapter;
+
 
     private SpeechRecognizer speechRecognizer;
-    private MaterialButton idBtnTranslation;
-    private Spinner idFromSpinner, idToSpinner;
-    private TextInputEditText inputTrans;
-    private ImageView ivMic, ivSwap;
-    private TextView translatedTextView;
     private boolean isListening = false;
-    private static final int REQUEST_CODE_PERMISSION = 1;
-    private long lastClickTime = 0;
-    private Translator translator;
+
+    private ActivityResultLauncher<String> requestPermissionLauncher;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_dashboard, container, false);
+        binding = FragmentDashboardBinding.inflate(inflater, container, false);
 
-        idToSpinner = view.findViewById(R.id.idToSpinner);
-        idFromSpinner = view.findViewById(R.id.idFromSpinner);
-        inputTrans = view.findViewById(R.id.inputTrans);
-        translatedTextView = view.findViewById(R.id.idTranslateTV);
-        idBtnTranslation = view.findViewById(R.id.idBtnTranslation);
-        ivMic = view.findViewById(R.id.idIVMic);
-        ivSwap = view.findViewById(R.id.ivSwap);
-        // Initialize Speech Recognizer
-        speechRecognizer = SpeechRecognizer.createSpeechRecognizer(requireContext());
-        checkAndRequestPermissions();
+        dashboardViewModel = new ViewModelProvider(this).get(DashboardViewModel.class);
 
-        ivMic.setOnClickListener(v -> {
-            if (SystemClock.elapsedRealtime() - lastClickTime < 1000) {
-                return;
-            }
-            lastClickTime = SystemClock.elapsedRealtime();
-            toggleSpeechRecognition();
+        dashboardViewModel.getInputText().observe(getViewLifecycleOwner(), text -> binding.inputTrans.setText(text));
+        dashboardViewModel.getTranslatedText().observe(getViewLifecycleOwner(), text -> binding.idTranslateTV.setText(text));
+
+        initializeSpeechRecognizer();
+
+        setupPermissionRequest();
+
+        setupSpinners();
+        setupMicClickListener();
+        setupTranslationButton();
+        setupSwapButton();
+
+        // Initialize RecyclerView
+        setupHistoryRecyclerView();
+
+        return binding.getRoot();
+    }
+
+    private void setupHistoryRecyclerView() {
+        historyAdapter = new TranslationHistoryAdapter();
+        binding.historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        binding.historyRecyclerView.setAdapter(historyAdapter);
+
+        // Observe history data
+        dashboardViewModel.getHistory().observe(getViewLifecycleOwner(), historyItems -> {
+            historyAdapter.setHistoryList(historyItems);
         });
+    }
 
-        // Set up Spinners
+    private void initializeSpeechRecognizer() {
+        Context context = getContext();
+        if (context != null) {
+            speechRecognizer = SpeechRecognizer.createSpeechRecognizer(context);
+            speechRecognizer.setRecognitionListener(new SpeechRecognitionListener());
+        } else {
+            Toast.makeText(getActivity(), getString(R.string.error_initializing_speech_recognizer), Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void setupPermissionRequest() {
+        requestPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (!isGranted) {
+                        Toast.makeText(getActivity(), getString(R.string.permission_denied), Toast.LENGTH_SHORT).show();
+                    }
+                }
+        );
+    }
+
+    private void setupSpinners() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 getContext(), R.array.languages_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        idFromSpinner.setAdapter(adapter);
-        idToSpinner.setAdapter(adapter);
+        binding.idFromSpinner.setAdapter(adapter);
+        binding.idToSpinner.setAdapter(adapter);
+    }
 
-        idBtnTranslation.setOnClickListener(v -> prepareTranslation());
+    private void setupMicClickListener() {
+        binding.idIVMic.setOnClickListener(v -> toggleSpeechRecognition());
+    }
 
-        // Add click listener for swap functionality
-        ivSwap.setOnClickListener(v -> swapSpinnerSelections());
+    private void setupTranslationButton() {
+        binding.idBtnTranslation.setOnClickListener(v -> prepareTranslation());
+    }
 
-        return view;
+    private void setupSwapButton() {
+        binding.ivSwap.setOnClickListener(v -> swapSpinnerSelections());
+    }
+
+    private void toggleSpeechRecognition() {
+        if(isListening){
+            stopListening();
+            binding.idIVMic.setImageResource(R.drawable.microphone);
+        } else {
+            startListening();
+            binding.idIVMic.setImageResource(R.drawable.ic_mic_on);
+        }
+    }
+
+    private void startListening() {
+        if (!checkAudioPermission()) {
+            requestAudioPermission();
+            return;
+        }
+
+        String selectedLanguage = getLanguageCode(binding.idFromSpinner.getSelectedItem().toString());
+        Locale locale = getLocale(selectedLanguage);
+
+        Intent intent = createSpeechRecognizerIntent(locale);
+
+        try {
+            speechRecognizer.startListening(intent);
+            isListening = true;
+            binding.inputTrans.setText(getString(R.string.listening));
+        } catch (Exception e){
+            binding.inputTrans.setText(getString(R.string.error_starting_listening));
+            isListening = false;
+        }
+    }
+
+    private void stopListening() {
+        if(isListening && speechRecognizer!= null) {
+            speechRecognizer.stopListening();
+            binding.inputTrans.setText(getString(R.string.stopped_listening));
+            isListening = false;
+            binding.idIVMic.setImageResource(R.drawable.microphone);
+        }
+    }
+
+    private Intent createSpeechRecognizerIntent(Locale locale) {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale.toString());
+        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
+
+        return intent;
+    }
+
+    private boolean checkAudioPermission() {
+        return ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO)
+                == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private void requestAudioPermission() {
+        requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
     }
 
     private void swapSpinnerSelections() {
-        // Get the current selections
-        int fromLangPosition = idFromSpinner.getSelectedItemPosition();
-        int toLangPosition = idToSpinner.getSelectedItemPosition();
+        int fromLangPosition = binding.idFromSpinner.getSelectedItemPosition();
+        int toLangPosition = binding.idToSpinner.getSelectedItemPosition();
 
-        // Swap the selections
-        idFromSpinner.setSelection(toLangPosition);
-        idToSpinner.setSelection(fromLangPosition);
+        binding.idFromSpinner.setSelection(toLangPosition);
+        binding.idToSpinner.setSelection(fromLangPosition);
     }
 
     private void prepareTranslation() {
-        String fromLang = getLanguageCode(idFromSpinner.getSelectedItem().toString());
-        String toLang = getLanguageCode(idToSpinner.getSelectedItem().toString());
+        String fromLang = getLanguageCode(binding.idFromSpinner.getSelectedItem().toString());
+        String toLang = getLanguageCode(binding.idToSpinner.getSelectedItem().toString());
 
         TranslatorOptions options = new TranslatorOptions.Builder()
                 .setSourceLanguage(fromLang)
                 .setTargetLanguage(toLang)
                 .build();
-        translator = Translation.getClient(options);
+
+        dashboardViewModel.setTranslator(Translation.getClient(options));
 
         DownloadConditions conditions = new DownloadConditions.Builder()
                 .requireWifi()
                 .build();
 
-        translator.downloadModelIfNeeded(conditions)
+        dashboardViewModel.getTranslator().downloadModelIfNeeded(conditions)
                 .addOnSuccessListener(unused -> translateText())
-                .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Model download failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> Toast.makeText(requireContext(), getString(R.string.model_download_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void translateText() {
-        String textToTranslate = inputTrans.getText().toString();
+        String textToTranslate = binding.inputTrans.getText().toString();
 
         if (textToTranslate.isEmpty()) {
-            Toast.makeText(requireContext(), "Please enter text to translate.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(requireContext(), getString(R.string.enter_text), Toast.LENGTH_SHORT).show();
             return;
         }
 
-        translator.translate(textToTranslate)
-                .addOnSuccessListener(translatedText -> {
-                    translatedTextView.setText(translatedText);
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(requireContext(), "Translation failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+        dashboardViewModel.getTranslator().translate(textToTranslate)
+                .addOnSuccessListener(translatedText -> dashboardViewModel.setTranslatedText(translatedText, binding.idFromSpinner.getSelectedItem().toString(), binding.idToSpinner.getSelectedItem().toString()))
+                .addOnFailureListener(e -> Toast.makeText(requireContext(), getString(R.string.translation_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private String getLanguageCode(String language) {
@@ -149,103 +243,13 @@ public class DashboardFragment extends Fragment {
             case "Chinese":
                 return TranslateLanguage.CHINESE;
             default:
-                return TranslateLanguage.ENGLISH; // Default
+                Toast.makeText(requireContext(), getString(R.string.language_not_supported), Toast.LENGTH_SHORT).show();
+                return TranslateLanguage.ENGLISH; // Default to English
         }
     }
 
-    private void toggleSpeechRecognition() {
-        if (isListening) {
-            stopListening();
-        } else {
-            startListening();
-        }
-    }
-
-    private void checkAndRequestPermissions() {
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.RECORD_AUDIO}, REQUEST_CODE_PERMISSION);
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_CODE_PERMISSION) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(requireContext(), "Permission granted!", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(requireContext(), "Permission denied. The app needs audio access to work.", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    private void startListening() {
-        String selectedLanguage = getLanguageCode(idFromSpinner.getSelectedItem().toString());
-        Locale locale = getLocale(selectedLanguage);
-
-        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale.toString());
-
-        speechRecognizer.setRecognitionListener(new RecognitionListener() {
-            @Override
-            public void onReadyForSpeech(Bundle params) {
-                inputTrans.setText("Listening...");
-            }
-
-            @Override
-            public void onBeginningOfSpeech() {
-
-            }
-
-            @Override
-            public void onRmsChanged(float rmsdB) {
-
-            }
-
-            @Override
-            public void onBufferReceived(byte[] buffer) {
-
-            }
-
-            @Override
-            public void onEndOfSpeech() {
-                inputTrans.setText("Processing...");
-            }
-
-            @Override
-            public void onError(int error) {
-                inputTrans.setText("Error occurred: " + getErrorMessage(error));
-                isListening = false;
-            }
-
-            @Override
-            public void onResults(Bundle results) {
-                ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                if (matches != null && !matches.isEmpty()) {
-                    inputTrans.setText(matches.get(0));
-                } else {
-                    inputTrans.setText("No speech recognized, try again.");
-                }
-                isListening = false;
-            }
-
-            @Override
-            public void onPartialResults(Bundle partialResults) {
-
-            }
-
-            @Override
-            public void onEvent(int eventType, Bundle params) {
-
-            }
-        });
-
-        speechRecognizer.startListening(intent);
-        isListening = true;
-    }
-
-    private Locale getLocale(String selectedLanguage) {
-        switch (selectedLanguage) {
+    private Locale getLocale(String languageCode) {
+        switch (languageCode) {
             case TranslateLanguage.VIETNAMESE:
                 return new Locale("vi");
             case TranslateLanguage.ENGLISH:
@@ -263,39 +267,115 @@ public class DashboardFragment extends Fragment {
         }
     }
 
-    private void stopListening() {
-        if (isListening && speechRecognizer != null) {
-            speechRecognizer.stopListening();
-            inputTrans.setText("Stopped listening. Click to start again.");
+    private class SpeechRecognitionListener implements RecognitionListener {
+        @Override
+        public void onReadyForSpeech(Bundle params) {
+            binding.inputTrans.setText(getString(R.string.listening));
+        }
+
+        @Override
+        public void onBeginningOfSpeech() {
+
+        }
+
+        @Override
+        public void onRmsChanged(float rmsdB) {
+
+        }
+
+        @Override
+        public void onBufferReceived(byte[] buffer) {
+
+        }
+
+        @Override
+        public void onEndOfSpeech() {
+            binding.inputTrans.setText(getString(R.string.processing));
+        }
+
+        @Override
+        public void onError(int error) {
+            String message = getErrorMessage(error);
+            binding.inputTrans.setText(message);
             isListening = false;
+            binding.idIVMic.setImageResource(R.drawable.microphone); // Reset mic icon
+        }
+
+        @Override
+        public void onResults(Bundle results) {
+            requireActivity().runOnUiThread(() -> {
+                ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                if (matches != null && !matches.isEmpty()) {
+                    dashboardViewModel.setInputText(matches.get(0));
+                } else {
+                    binding.inputTrans.setText(getString(R.string.no_speech_recognized));
+                }
+                isListening = false;
+                binding.idIVMic.setImageResource(R.drawable.microphone); // Reset mic icon
+            });
+        }
+
+        @Override
+        public void onPartialResults(Bundle partialResults) {
+            ArrayList<String> partial = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+            if (partial != null && !partial.isEmpty()) {
+                binding.inputTrans.setText(partial.get(0));
+            }
+        }
+
+        @Override
+        public void onEvent(int eventType, Bundle params) {
+
         }
     }
 
-    private String getErrorMessage(int error) {
-        switch (error) {
-            case SpeechRecognizer.ERROR_AUDIO: return "Audio recording error";
-            case SpeechRecognizer.ERROR_CLIENT: return "Client-side error";
-            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS: return "Insufficient permissions";
-            case SpeechRecognizer.ERROR_NETWORK: return "Network error";
-            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT: return "Network timeout";
-            case SpeechRecognizer.ERROR_NO_MATCH: return "No speech recognized";
-            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY: return "Recognition service busy";
-            case SpeechRecognizer.ERROR_SERVER: return "Server error";
-            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT: return "No speech input detected";
-            default: return "Unknown error occurred";
+    private String getErrorMessage(int errorCode) {
+        switch (errorCode) {
+            case SpeechRecognizer.ERROR_AUDIO:
+                return getString(R.string.error_audio);
+            case SpeechRecognizer.ERROR_CLIENT:
+                return getString(R.string.error_client);
+            case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
+                return getString(R.string.error_permissions);
+            case SpeechRecognizer.ERROR_NETWORK:
+                return getString(R.string.error_network);
+            case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
+                return getString(R.string.error_network_timeout);
+            case SpeechRecognizer.ERROR_NO_MATCH:
+                return getString(R.string.error_no_match);
+            case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
+                return getString(R.string.error_recognizer_busy);
+            case SpeechRecognizer.ERROR_SERVER:
+                return getString(R.string.error_server);
+            case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
+                return getString(R.string.error_speech_timeout);
+            default:
+                return getString(R.string.error_unknown);
         }
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onPause() {
+        super.onPause();
+        if (isListening) {
+            stopListening();
+            binding.idIVMic.setImageResource(R.drawable.microphone); // Reset mic icon
+        }
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Release SpeechRecognizer resources
         if (speechRecognizer != null) {
-            speechRecognizer.stopListening();
             speechRecognizer.destroy();
             speechRecognizer = null;
         }
-        if (translator != null) {
-            translator.close();
+        // Close the translator
+        if (dashboardViewModel.getTranslator() != null) {
+            dashboardViewModel.getTranslator().close();
         }
+        // Nullify binding
+        binding = null;
     }
 }
