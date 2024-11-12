@@ -1,5 +1,6 @@
 package com.example.sttapp;
 
+import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.text.format.DateFormat;
@@ -7,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.content.Context;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -19,8 +21,16 @@ public class TranslationHistoryAdapter extends RecyclerView.Adapter<TranslationH
     private List<TranslationHistoryItem> historyList;
     private Context context;
 
-    public TranslationHistoryAdapter(Context context) {
+    // Add an interface for item deletion callback
+    public interface OnDeleteClickListener {
+        void onDeleteClick(TranslationHistoryItem item);
+    }
+
+    private OnDeleteClickListener deleteClickListener;
+
+    public TranslationHistoryAdapter(Context context, OnDeleteClickListener deleteClickListener) {
         this.context = context;
+        this.deleteClickListener = deleteClickListener;
     }
 
     public void setHistoryList(List<TranslationHistoryItem> historyList) {
@@ -49,6 +59,20 @@ public class TranslationHistoryAdapter extends RecyclerView.Adapter<TranslationH
             copyTextToClipboard(item);
             return true;
         });
+
+        // Set up click listener for the Delete button
+        holder.deleteButton.setOnClickListener(v -> {
+            new AlertDialog.Builder(context)
+                    .setTitle("Delete Entry")
+                    .setMessage("Are you sure you want to delete this entry?")
+                    .setPositiveButton(android.R.string.yes, (dialog, which) -> {
+                        if (deleteClickListener != null) {
+                            deleteClickListener.onDeleteClick(item);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.no, null)
+                    .show();
+        });
     }
 
     @Override
@@ -67,8 +91,17 @@ public class TranslationHistoryAdapter extends RecyclerView.Adapter<TranslationH
         Toast.makeText(context, "Translation copied to clipboard", Toast.LENGTH_SHORT).show();
     }
 
+    public void removeItem(TranslationHistoryItem item) {
+        int position = historyList.indexOf(item);
+        if (position != -1) {
+            historyList.remove(position);
+            notifyItemRemoved(position);
+        }
+    }
+
     static class HistoryViewHolder extends RecyclerView.ViewHolder {
         TextView originalText, translatedText, languages, timestamp;
+        Button deleteButton;
 
         public HistoryViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -76,6 +109,7 @@ public class TranslationHistoryAdapter extends RecyclerView.Adapter<TranslationH
             translatedText = itemView.findViewById(R.id.translatedText);
             languages = itemView.findViewById(R.id.languages);
             timestamp = itemView.findViewById(R.id.timestamp);
+            deleteButton = itemView.findViewById(R.id.deleteButton);
         }
     }
 }

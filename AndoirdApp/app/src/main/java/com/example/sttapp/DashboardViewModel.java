@@ -67,6 +67,10 @@ public class DashboardViewModel extends AndroidViewModel {
         executor.execute(() -> database.translationHistoryDao().insert(item));
     }
 
+    public void deleteHistoryItem(TranslationHistoryItem item) {
+        executor.execute(() -> database.translationHistoryDao().delete(item));
+    }
+
     @Override
     protected void onCleared() {
         super.onCleared();

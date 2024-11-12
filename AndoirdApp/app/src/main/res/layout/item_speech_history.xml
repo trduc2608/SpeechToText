@@ -9,14 +9,20 @@
         android:id="@+id/recognizedText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Recognized Text"
-        android:textSize="16sp" />
+        android:text="@string/recognized_text"
+        android:textSize="20sp" />
 
     <TextView
         android:id="@+id/timestamp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Timestamp"
-        android:textSize="12sp"
+        android:text="@string/timestamp"
+        android:textSize="16sp"
         android:textColor="#888888" />
+
+    <Button
+        android:id="@+id/deleteButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/delete"/>
 </LinearLayout>

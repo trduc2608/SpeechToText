@@ -37,6 +37,10 @@ public class HomeViewModel extends AndroidViewModel {
         return history;
     }
 
+    public void deleteHistoryItem(SpeechHistoryItem item) {
+        executor.execute(() -> database.speechHistoryDao().delete(item));
+    }
+
     private void saveToHistory(String text) {
         SpeechHistoryItem item = new SpeechHistoryItem(text, System.currentTimeMillis());
         executor.execute(() -> database.speechHistoryDao().insert(item));

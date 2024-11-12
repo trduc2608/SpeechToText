@@ -97,7 +97,10 @@ public class DashboardFragment extends Fragment {
     }
 
     private void setupHistoryRecyclerView() {
-        historyAdapter = new TranslationHistoryAdapter(getContext());
+        historyAdapter = new TranslationHistoryAdapter(getContext(), item -> {
+            // Delete the item from the database
+            dashboardViewModel.deleteHistoryItem(item);
+        });
         binding.historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.historyRecyclerView.setAdapter(historyAdapter);
 
@@ -186,7 +189,6 @@ public class DashboardFragment extends Fragment {
     private void stopListening() {
         if (isListening && speechRecognizer != null) {
             speechRecognizer.stopListening();
-            binding.inputTrans.setText(getString(R.string.stopped_listening));
             isListening = false;
             binding.idIVMic.setImageResource(R.drawable.microphone);
         }
