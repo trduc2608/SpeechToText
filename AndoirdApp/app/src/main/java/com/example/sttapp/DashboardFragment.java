@@ -11,6 +11,7 @@ import android.os.SystemClock;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -165,6 +166,11 @@ public class DashboardFragment extends Fragment {
 
         String selectedLanguage = getSpeechRecognizerLanguageCode(binding.idFromSpinner.getSelectedItem().toString());
 
+        if (selectedLanguage == null) {
+            Toast.makeText(getContext(), "Selected language is not supported for speech recognition.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = createSpeechRecognizerIntent(selectedLanguage);
 
         try {
@@ -188,11 +194,12 @@ public class DashboardFragment extends Fragment {
 
     private Intent createSpeechRecognizerIntent(String languageCode) {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode);
-        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
-
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_PREFERENCE, languageCode);
+        intent.putExtra(RecognizerIntent.EXTRA_ONLY_RETURN_LANGUAGE_PREFERENCE, languageCode);
+        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
         return intent;
     }
 
@@ -262,10 +269,7 @@ public class DashboardFragment extends Fragment {
             case "Chinese":
                 return "zh-CN"; // Simplified Chinese
             default:
-                Toast.makeText(requireContext(),
-                        getString(R.string.language_not_supported),
-                        Toast.LENGTH_SHORT).show();
-                return "en-US"; // Default to English
+                return null;
         }
     }
 
@@ -295,12 +299,13 @@ public class DashboardFragment extends Fragment {
     private class SpeechRecognitionListener implements RecognitionListener {
         @Override
         public void onReadyForSpeech(Bundle params) {
+            Log.d("SpeechRecognition", "onReadyForSpeech");
             binding.inputTrans.setText(getString(R.string.listening));
         }
 
         @Override
         public void onBeginningOfSpeech() {
-
+            Log.d("SpeechRecognition", "onBeginningOfSpeech");
         }
 
         @Override
@@ -315,12 +320,14 @@ public class DashboardFragment extends Fragment {
 
         @Override
         public void onEndOfSpeech() {
+            Log.d("SpeechRecognition", "onEndOfSpeech");
             binding.inputTrans.setText(getString(R.string.processing));
         }
 
         @Override
         public void onError(int error) {
             String message = getErrorMessage(error);
+            Log.e("SpeechRecognition", "onError code: " + error + ", message: " + message);
             binding.inputTrans.setText(message);
             isListening = false;
             binding.idIVMic.setImageResource(R.drawable.microphone); // Reset mic icon
@@ -328,11 +335,14 @@ public class DashboardFragment extends Fragment {
 
         @Override
         public void onResults(Bundle results) {
+            Log.d("SpeechRecognition", "onResults");
             requireActivity().runOnUiThread(() -> {
                 ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 if (matches != null && !matches.isEmpty()) {
+                    Log.d("SpeechRecognition", "Recognized Text: " + matches.get(0));
                     dashboardViewModel.setInputText(matches.get(0));
                 } else {
+                    Log.d("SpeechRecognition", "No speech recognized");
                     binding.inputTrans.setText(getString(R.string.no_speech_recognized));
                 }
                 isListening = false;
