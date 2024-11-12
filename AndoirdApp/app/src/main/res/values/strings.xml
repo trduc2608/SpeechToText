@@ -22,7 +22,7 @@
     <string name="listening">Listening...</string>
     <string name="processing">Processing...</string>
     <string name="no_speech_recognized">No speech recognized, try again.</string>
-    <string name="stopped_listening">Stopped listening. Click to start again.</string>
+    <string name="stopped_listening">In Processing....</string>
     <string name="click_to_stop">Listening... Click to stop.</string>
     <string name="error_audio">Audio recording error.</string>
     <string name="error_client">Client-side error.</string>
