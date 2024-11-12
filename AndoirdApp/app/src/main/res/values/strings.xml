@@ -22,7 +22,7 @@
     <string name="listening">Listening...</string>
     <string name="processing">Processing...</string>
     <string name="no_speech_recognized">No speech recognized, try again.</string>
-    <string name="stopped_listening">Stopped listening. Click to start again.</string>
+    <string name="stopped_listening">In Processing....</string>
     <string name="click_to_stop">Listening... Click to stop.</string>
     <string name="error_audio">Audio recording error.</string>
     <string name="error_client">Client-side error.</string>
@@ -42,6 +42,9 @@
     <string name="enter_text_to_translate">Please enter text to translate.</string>
     <string name="translation_failed">Translation failed: </string>
     <string name="model_download_failed">Model download failed: </string>
+    <string name="delete">Delete</string>
+    <string name="timestamp">Timestamp</string>
+    <string name="recognized_text">Recognized Text</string>
 
 
     <string-array name="languages_array">

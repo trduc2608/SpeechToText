@@ -6,7 +6,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".DashboardFragment"
     android:background="@color/offWhite">
- 
+  
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -120,10 +120,10 @@
             android:textSize="19sp"
             android:textAllCaps="false"/>
 
-        <TextView
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/idTranslateTV"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/idTranslateTV"
             android:hint="@string/translated_text_here"
             android:background="@drawable/background"
             android:elevation="3dp"
@@ -135,7 +135,9 @@
             android:padding="16sp"
             android:textSize="16sp"
             android:textColorHint="@color/colorPrimary"
-            android:letterSpacing="0.03"/>
+            android:letterSpacing="0.03"
+            android:clickable="true"
+            android:focusable="true"/>
 
         <TextView
             android:id="@+id/historyTitle"

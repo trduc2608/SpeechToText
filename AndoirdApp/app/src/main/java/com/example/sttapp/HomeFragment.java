@@ -83,7 +83,10 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupHistoryRecyclerView() {
-        historyAdapter = new SpeechHistoryAdapter();
+        historyAdapter = new SpeechHistoryAdapter(getContext(), item -> {
+            // Delete the item from the database
+            homeViewModel.deleteHistoryItem(item);
+        });
         binding.historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.historyRecyclerView.setAdapter(historyAdapter);
 
@@ -166,7 +169,6 @@ public class HomeFragment extends Fragment {
     private void stopListening() {
         if (isRecording && speechRecognizer != null) {
             speechRecognizer.stopListening();
-            binding.textstore.setText(getString(R.string.stopped_listening));
             isRecording = false;
             binding.IVMic.setImageResource(R.drawable.microphone); // Reset mic icon
         }
