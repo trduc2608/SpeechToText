@@ -13,7 +13,6 @@
         android:layout_height="wrap_content"
         android:paddingBottom="20dp">
 
-        <!-- Header Section -->
         <LinearLayout
             android:orientation="vertical"
             android:layout_marginStart="20dp"
@@ -41,7 +40,6 @@
                 android:layout_gravity="center" />
         </LinearLayout>
 
-        <!-- Spinner Section -->
         <LinearLayout
             android:orientation="horizontal"
             android:layout_marginStart="20dp"
@@ -61,7 +59,6 @@
                 android:padding="3dp"
                 android:layout_margin="3dp"
                 android:layout_gravity="center" />
-
             <ImageView
                 android:layout_width="0dp"
                 android:layout_height="35dp"
@@ -69,7 +66,6 @@
                 android:id="@+id/ivSwap"
                 android:src="@drawable/transfer"
                 android:layout_gravity="center" />
-
             <Spinner
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -90,7 +86,6 @@
             android:id="@+id/idIVMic"
             android:layout_gravity="center"/>
 
-        <!-- Text Input Section -->
         <com.google.android.material.textfield.TextInputLayout
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
@@ -142,7 +137,6 @@
             android:textColorHint="@color/colorPrimary"
             android:letterSpacing="0.03"/>
 
-        <!-- History Section -->
         <TextView
             android:id="@+id/historyTitle"
             android:layout_width="match_parent"
