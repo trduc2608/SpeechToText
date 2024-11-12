@@ -13,17 +13,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-<<<<<<< Updated upstream
- 
-=======
-<<<<<<< HEAD
 
 import com.google.android.material.snackbar.Snackbar;
 
-=======
- 
->>>>>>> 0cebe6dc6f8769e37d6b64ddffd71ecdd39616af
->>>>>>> Stashed changes
+
 import java.util.List;
 
 public class SpeechHistoryAdapter extends RecyclerView.Adapter<SpeechHistoryAdapter.HistoryViewHolder> {
