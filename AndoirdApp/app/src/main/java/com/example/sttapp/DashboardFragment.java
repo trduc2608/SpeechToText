@@ -1,6 +1,8 @@
  package com.example.sttapp;
 
 import android.Manifest;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -30,6 +32,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.sttapp.databinding.FragmentDashboardBinding;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.mlkit.common.model.DownloadConditions;
 import com.google.mlkit.nl.translate.TranslateLanguage;
@@ -44,7 +47,6 @@ public class DashboardFragment extends Fragment {
     private FragmentDashboardBinding binding;
     private DashboardViewModel dashboardViewModel;
     private TranslationHistoryAdapter historyAdapter;
-
 
     private SpeechRecognizer speechRecognizer;
     private boolean isListening = false;
@@ -73,7 +75,24 @@ public class DashboardFragment extends Fragment {
         // Initialize RecyclerView
         setupHistoryRecyclerView();
 
+        binding.idTranslateTV.setOnLongClickListener(v -> {
+            String translatedText = binding.idTranslateTV.getText().toString();
+            if (!translatedText.isEmpty()) {
+                copyTextToClipboard(translatedText);
+            } else {
+                Toast.makeText(getContext(), "No text to copy", Toast.LENGTH_SHORT).show();
+            }
+            return true; // Indicate that the event is consumed
+        });
+
         return binding.getRoot();
+    }
+
+    private void copyTextToClipboard(String text) {
+        ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Translated Text", text);
+        clipboard.setPrimaryClip(clip);
+        Snackbar.make(binding.getRoot(), "Translated text copied to clipboard", Snackbar.LENGTH_SHORT).show();
     }
 
     private void setupHistoryRecyclerView() {
@@ -129,7 +148,7 @@ public class DashboardFragment extends Fragment {
     }
 
     private void toggleSpeechRecognition() {
-        if(isListening){
+        if (isListening) {
             stopListening();
             binding.idIVMic.setImageResource(R.drawable.microphone);
         } else {
@@ -144,23 +163,22 @@ public class DashboardFragment extends Fragment {
             return;
         }
 
-        String selectedLanguage = getLanguageCode(binding.idFromSpinner.getSelectedItem().toString());
-        Locale locale = getLocale(selectedLanguage);
+        String selectedLanguage = getSpeechRecognizerLanguageCode(binding.idFromSpinner.getSelectedItem().toString());
 
-        Intent intent = createSpeechRecognizerIntent(locale);
+        Intent intent = createSpeechRecognizerIntent(selectedLanguage);
 
         try {
             speechRecognizer.startListening(intent);
             isListening = true;
             binding.inputTrans.setText(getString(R.string.listening));
-        } catch (Exception e){
+        } catch (Exception e) {
             binding.inputTrans.setText(getString(R.string.error_starting_listening));
             isListening = false;
         }
     }
 
     private void stopListening() {
-        if(isListening && speechRecognizer!= null) {
+        if (isListening && speechRecognizer != null) {
             speechRecognizer.stopListening();
             binding.inputTrans.setText(getString(R.string.stopped_listening));
             isListening = false;
@@ -168,11 +186,11 @@ public class DashboardFragment extends Fragment {
         }
     }
 
-    private Intent createSpeechRecognizerIntent(Locale locale) {
+    private Intent createSpeechRecognizerIntent(String languageCode) {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, locale.toString());
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, languageCode);
         intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true);
 
         return intent;
@@ -196,8 +214,8 @@ public class DashboardFragment extends Fragment {
     }
 
     private void prepareTranslation() {
-        String fromLang = getLanguageCode(binding.idFromSpinner.getSelectedItem().toString());
-        String toLang = getLanguageCode(binding.idToSpinner.getSelectedItem().toString());
+        String fromLang = getTranslatorLanguageCode(binding.idFromSpinner.getSelectedItem().toString());
+        String toLang = getTranslatorLanguageCode(binding.idToSpinner.getSelectedItem().toString());
 
         TranslatorOptions options = new TranslatorOptions.Builder()
                 .setSourceLanguage(fromLang)
@@ -228,7 +246,31 @@ public class DashboardFragment extends Fragment {
                 .addOnFailureListener(e -> Toast.makeText(requireContext(), getString(R.string.translation_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    private String getLanguageCode(String language) {
+    // New method for speech recognizer language codes
+    private String getSpeechRecognizerLanguageCode(String language) {
+        switch (language) {
+            case "Vietnamese":
+                return "vi-VN";
+            case "English":
+                return "en-US";
+            case "German":
+                return "de-DE";
+            case "Japanese":
+                return "ja-JP";
+            case "Korean":
+                return "ko-KR";
+            case "Chinese":
+                return "zh-CN"; // Simplified Chinese
+            default:
+                Toast.makeText(requireContext(),
+                        getString(R.string.language_not_supported),
+                        Toast.LENGTH_SHORT).show();
+                return "en-US"; // Default to English
+        }
+    }
+
+    // Existing method for translator language codes
+    private String getTranslatorLanguageCode(String language) {
         switch (language) {
             case "Vietnamese":
                 return TranslateLanguage.VIETNAMESE;
@@ -243,27 +285,10 @@ public class DashboardFragment extends Fragment {
             case "Chinese":
                 return TranslateLanguage.CHINESE;
             default:
-                Toast.makeText(requireContext(), getString(R.string.language_not_supported), Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(),
+                        getString(R.string.language_not_supported),
+                        Toast.LENGTH_SHORT).show();
                 return TranslateLanguage.ENGLISH; // Default to English
-        }
-    }
-
-    private Locale getLocale(String languageCode) {
-        switch (languageCode) {
-            case TranslateLanguage.VIETNAMESE:
-                return new Locale("vi");
-            case TranslateLanguage.ENGLISH:
-                return Locale.ENGLISH;
-            case TranslateLanguage.GERMAN:
-                return Locale.GERMAN;
-            case TranslateLanguage.JAPANESE:
-                return Locale.JAPANESE;
-            case TranslateLanguage.KOREAN:
-                return Locale.KOREAN;
-            case TranslateLanguage.CHINESE:
-                return Locale.SIMPLIFIED_CHINESE;
-            default:
-                return Locale.ENGLISH;
         }
     }
 
