@@ -77,7 +77,7 @@ public class DashboardFragment extends Fragment {
     }
 
     private void setupHistoryRecyclerView() {
-        historyAdapter = new TranslationHistoryAdapter();
+        historyAdapter = new TranslationHistoryAdapter(getContext());
         binding.historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.historyRecyclerView.setAdapter(historyAdapter);
 

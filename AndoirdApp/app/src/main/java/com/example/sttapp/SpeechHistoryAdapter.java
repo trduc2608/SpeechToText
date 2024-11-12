@@ -1,19 +1,39 @@
 package com.example.sttapp;
 
+import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+<<<<<<< Updated upstream
  
+=======
+<<<<<<< HEAD
+
+import com.google.android.material.snackbar.Snackbar;
+
+=======
+ 
+>>>>>>> 0cebe6dc6f8769e37d6b64ddffd71ecdd39616af
+>>>>>>> Stashed changes
 import java.util.List;
 
 public class SpeechHistoryAdapter extends RecyclerView.Adapter<SpeechHistoryAdapter.HistoryViewHolder> {
 
     private List<SpeechHistoryItem> historyList;
+    private Context context;
+
+    public SpeechHistoryAdapter(Context context){
+        this.context = context;
+    }
 
     public void setHistoryList(List<SpeechHistoryItem> historyList) {
         this.historyList = historyList;
@@ -33,6 +53,19 @@ public class SpeechHistoryAdapter extends RecyclerView.Adapter<SpeechHistoryAdap
         holder.recognizedText.setText(item.getRecognizedText());
         String date = DateFormat.format("dd/MM/yyyy hh:mm:ss", item.getTimestamp()).toString();
         holder.timestamp.setText(date);
+
+        holder.itemView.setOnLongClickListener(v -> {
+            copyTextToClipboard(item.getRecognizedText());
+            return true;
+        });
+    }
+
+    private void copyTextToClipboard(String text) {
+        ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Recognized Text", text);
+        clipboard.setPrimaryClip(clip);
+        Snackbar.make(((Activity) context).findViewById(android.R.id.content),
+                "Text copied to clipboard", Snackbar.LENGTH_SHORT).show();
     }
 
     @Override

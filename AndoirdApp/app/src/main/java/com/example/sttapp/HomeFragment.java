@@ -83,7 +83,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupHistoryRecyclerView() {
-        historyAdapter = new SpeechHistoryAdapter();
+        historyAdapter = new SpeechHistoryAdapter(getContext());
         binding.historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.historyRecyclerView.setAdapter(historyAdapter);
 
