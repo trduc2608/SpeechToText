@@ -1,4 +1,4 @@
- package com.example.sttapp;
+package com.example.sttapp;
 
 import android.Manifest;
 import android.content.ClipData;
