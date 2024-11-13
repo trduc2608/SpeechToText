@@ -45,6 +45,7 @@
     <string name="delete">Delete</string>
     <string name="timestamp">Timestamp</string>
     <string name="recognized_text">Recognized Text</string>
+    <string name="language_not_supported_for_speech">Language not supported\n</string>
 
 
     <string-array name="languages_array">

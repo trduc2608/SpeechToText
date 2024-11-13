@@ -52,7 +52,7 @@
             android:weightSum="3">
 
             <Spinner
-                android:id="@+id/idFromSpinner"
+                android:id="@+id/fromLanguageSpinner"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -69,7 +69,7 @@
                 android:src="@drawable/transfer" />
 
             <Spinner
-                android:id="@+id/idToSpinner"
+                android:id="@+id/toLanguageSpinner"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -79,7 +79,7 @@
         </LinearLayout>
 
         <ImageView
-            android:id="@+id/idIVMic"
+            android:id="@+id/micImageView"
             android:layout_width="44dp"
             android:layout_height="37dp"
             android:layout_gravity="center"
@@ -99,7 +99,7 @@
             android:elevation="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/inputTrans"
+                android:id="@+id/inputTextView"
                 android:layout_width="match_parent"
                 android:layout_height="126dp"
                 android:background="@drawable/background"
@@ -113,6 +113,13 @@
                 android:textSize="19sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center"/>
+        
         <com.google.android.material.button.MaterialButton
             android:id="@+id/idBtnTranslation"
             android:layout_width="167dp"
@@ -124,7 +131,7 @@
             android:textSize="19sp" />
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/idTranslateTV"
+            android:id="@+id/translatedTextView"
             android:layout_width="match_parent"
             android:layout_height="204dp"
             android:layout_gravity="center"
