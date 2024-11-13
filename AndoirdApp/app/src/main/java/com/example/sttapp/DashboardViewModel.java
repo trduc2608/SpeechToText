@@ -75,6 +75,10 @@ public class DashboardViewModel extends AndroidViewModel {
     }
 
     private void saveToHistory(String originalText, String translatedText, String fromLanguage, String toLanguage) {
+        if (originalText == null) {
+            originalText = "";
+        }
+
         TranslationHistoryItem item = new TranslationHistoryItem(
                 originalText,
                 translatedText,

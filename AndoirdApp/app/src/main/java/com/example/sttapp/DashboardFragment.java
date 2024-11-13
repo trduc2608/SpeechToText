@@ -296,12 +296,16 @@ private void requestAudioPermission() {
     }
 
     private void translateText() {
-String textToTranslate = binding.inputTextView.getText().toString();
+        String textToTranslate = binding.inputTextView.getText().toString();
 
         if (textToTranslate.isEmpty()) {
             Toast.makeText(requireContext(), getString(R.string.enter_text), Toast.LENGTH_SHORT).show();
             return;
         }
+
+        // Update the input text in the ViewModel
+        dashboardViewModel.setInputText(textToTranslate);
+
 
         dashboardViewModel.getTranslator().translate(textToTranslate)
                 .addOnSuccessListener(translatedText -> {
