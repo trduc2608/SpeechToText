@@ -35,10 +35,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.sttapp.databinding.FragmentHomeBinding;
-
 import java.util.ArrayList;
 import java.util.Locale;
-
 import android.Manifest;
 
  
@@ -58,13 +56,10 @@ public class HomeFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Initialize View Binding
         binding = FragmentHomeBinding.inflate(inflater, container, false);
 
-        // Initialize ViewModel
         homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
 
-        // Observe LiveData
         homeViewModel.getRecognizedText().observe(getViewLifecycleOwner(), text -> {
             if (text != null) {
                 binding.recognizedTextView.setText(text);
@@ -104,13 +99,13 @@ public class HomeFragment extends Fragment {
 
     private void setupHistoryRecyclerView() {
         historyAdapter = new SpeechHistoryAdapter(getContext(), item -> {
-            // Delete the item from the database
+
             homeViewModel.deleteHistoryItem(item);
         });
         binding.historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.historyRecyclerView.setAdapter(historyAdapter);
 
-        // Observe history data
+
         homeViewModel.getHistory().observe(getViewLifecycleOwner(), historyItems -> {
             historyAdapter.setHistoryList(historyItems);
         });
@@ -142,7 +137,7 @@ public class HomeFragment extends Fragment {
                 getContext(), R.array.languages_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         binding.languageSpinner.setAdapter(adapter);
-        // Assuming you have set up an adapter for the spinner in your layout
+
         binding.languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View viewSpinner, int position, long id) {
@@ -152,7 +147,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // Default to English if nothing is selected
+
                 selectedLanguage = "en-US";
             }
         });
@@ -165,10 +160,9 @@ public class HomeFragment extends Fragment {
     private void updateUIForRecordingState(boolean isRecording) {
         if (isRecording) {
             binding.micImageView.setImageResource(R.drawable.ic_mic_on);
-            // Optionally, start an animation
+
         } else {
             binding.micImageView.setImageResource(R.drawable.microphone);
-            // Optionally, stop the animation
         }
     }
 
@@ -251,12 +245,12 @@ public class HomeFragment extends Fragment {
             case "Korean":
                 return "ko-KR";
             case "Chinese":
-                return "zh-CN"; // Simplified Chinese
+                return "zh-CN"; 
             default:
                 Toast.makeText(requireContext(),
                         getString(R.string.language_not_supported),
                         Toast.LENGTH_SHORT).show();
-                return "en-US"; // Default to English
+                return "en-US"; 
         }
     }
 
@@ -269,17 +263,14 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onBeginningOfSpeech() {
-            // You can update UI here if needed
         }
 
         @Override
         public void onRmsChanged(float rmsdB) {
-            // Implement if you want to show sound level changes
         }
 
         @Override
         public void onBufferReceived(byte[] buffer) {
-            // Implement if needed
         }
 
         @Override
@@ -317,12 +308,10 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onPartialResults(Bundle partialResults) {
-            // Do not process partial results
         }
 
         @Override
         public void onEvent(int eventType, Bundle params) {
-            // Implement if needed
         }
     }
 
@@ -376,7 +365,6 @@ public class HomeFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Release SpeechRecognizer resources
         if (speechRecognizer != null) {
             speechRecognizer.destroy();
             speechRecognizer = null;
