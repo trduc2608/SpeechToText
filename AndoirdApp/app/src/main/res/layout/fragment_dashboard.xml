@@ -41,50 +41,52 @@
         </LinearLayout>
 
         <LinearLayout
-            android:orientation="horizontal"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginTop="40dp"
-            android:weightSum="3"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="46dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginEnd="20dp"
             android:background="@drawable/background"
-            android:elevation="4dp">
+            android:elevation="4dp"
+            android:orientation="horizontal"
+            android:weightSum="3">
 
             <Spinner
+                android:id="@+id/idFromSpinner"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/idFromSpinner"
-                android:padding="3dp"
+                android:layout_gravity="center"
                 android:layout_margin="3dp"
-                android:layout_gravity="center" />
+                android:layout_weight="1"
+                android:padding="3dp" />
+
             <ImageView
+                android:id="@+id/ivSwap"
                 android:layout_width="0dp"
                 android:layout_height="35dp"
+                android:layout_gravity="center"
                 android:layout_weight="1"
-                android:id="@+id/ivSwap"
-                android:src="@drawable/transfer"
-                android:layout_gravity="center" />
+                android:src="@drawable/transfer" />
+
             <Spinner
+                android:id="@+id/idToSpinner"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:id="@+id/idToSpinner"
-                android:padding="3dp"
+                android:layout_gravity="center"
                 android:layout_margin="3dp"
-                android:layout_gravity="center" />
+                android:layout_weight="1"
+                android:padding="3dp" />
         </LinearLayout>
 
         <ImageView
-            android:layout_width="50dp"
-            android:layout_height="50dp"
-            android:src="@drawable/microphone"
+            android:id="@+id/idIVMic"
+            android:layout_width="44dp"
+            android:layout_height="37dp"
+            android:layout_gravity="center"
             android:layout_marginTop="20dp"
             android:layout_marginBottom="10dp"
             android:padding="4dp"
-            android:id="@+id/idIVMic"
-            android:layout_gravity="center"/>
+            android:src="@drawable/microphone" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_marginStart="20dp"
@@ -97,47 +99,48 @@
             android:elevation="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
                 android:id="@+id/inputTrans"
-                android:hint="@string/enter_text_or_say_something"
+                android:layout_width="match_parent"
+                android:layout_height="126dp"
+                android:background="@drawable/background"
                 android:ems="10"
+                android:hint="@string/enter_text_or_say_something"
                 android:importantForAutofill="no"
                 android:inputType="textImeMultiLine|textMultiLine"
-                android:textColor="@color/colorPrimary"
-                android:textSize="19sp"
                 android:textAlignment="center"
-                android:background="@drawable/background"
-                android:textColorHint="@color/colorPrimary"/>
+                android:textColor="@color/colorPrimary"
+                android:textColorHint="@color/colorPrimary"
+                android:textSize="19sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="20dp"
             android:id="@+id/idBtnTranslation"
+            android:layout_width="167dp"
+            android:layout_height="45dp"
+            android:layout_gravity="center"
+            android:layout_margin="20dp"
             android:text="@string/translate"
-            android:textSize="19sp"
-            android:textAllCaps="false"/>
+            android:textAllCaps="false"
+            android:textSize="19sp" />
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/idTranslateTV"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/translated_text_here"
-            android:background="@drawable/background"
-            android:elevation="3dp"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
+            android:layout_height="204dp"
             android:layout_gravity="center"
-            android:textAlignment="center"
-            android:padding="16sp"
-            android:textSize="16sp"
-            android:textColorHint="@color/colorPrimary"
-            android:letterSpacing="0.03"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/background"
             android:clickable="true"
-            android:focusable="true"/>
+            android:elevation="3dp"
+            android:focusable="true"
+            android:hint="@string/translated_text_here"
+            android:letterSpacing="0.03"
+            android:padding="16sp"
+            android:textAlignment="center"
+            android:textColorHint="@color/colorPrimary"
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/historyTitle"
