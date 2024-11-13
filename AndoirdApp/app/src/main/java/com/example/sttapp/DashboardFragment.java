@@ -156,7 +156,7 @@ public class DashboardFragment extends Fragment {
             stopListening();
             binding.idIVMic.setImageResource(R.drawable.microphone);
         } else {
-            startListening();
+               startListening();
             binding.idIVMic.setImageResource(R.drawable.ic_mic_on);
         }
     }
@@ -341,8 +341,12 @@ public class DashboardFragment extends Fragment {
             requireActivity().runOnUiThread(() -> {
                 ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 if (matches != null && !matches.isEmpty()) {
-                    Log.d("SpeechRecognition", "Recognized Text: " + matches.get(0));
-                    dashboardViewModel.setInputText(matches.get(0));
+                    String recognizedText = matches.get(0);
+                    Log.d("SpeechRecognition", "Recognized Text: " + recognizedText);
+                    dashboardViewModel.setInputText(recognizedText);
+
+                    // Automatically initiate translation after speech is recognized
+                    prepareTranslation();
                 } else {
                     Log.d("SpeechRecognition", "No speech recognized");
                     binding.inputTrans.setText(getString(R.string.no_speech_recognized));
@@ -351,6 +355,7 @@ public class DashboardFragment extends Fragment {
                 binding.idIVMic.setImageResource(R.drawable.microphone); // Reset mic icon
             });
         }
+
 
         @Override
         public void onPartialResults(Bundle partialResults) {
