@@ -11,11 +11,11 @@
 
 
     <ImageView
-        android:layout_width="150dp"
-        android:layout_height="100dp"
-        android:src="@drawable/logo_btec"
+        android:layout_width="123dp"
+        android:layout_height="56dp"
         android:layout_gravity="center"
-        android:layout_margin="16dp" />
+        android:layout_margin="16dp"
+        android:src="@drawable/logo_btec" />
 
     <LinearLayout
         android:orientation="vertical"
@@ -86,7 +86,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/historyRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_height="340dp"
         android:layout_marginTop="8dp"
         android:paddingStart="16dp"
         android:paddingEnd="16dp"

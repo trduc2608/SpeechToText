@@ -5,22 +5,32 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-
+<TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:text="Original Text:"
+    android:textSize="20sp"
+    android:textStyle="bold"/>
     <TextView
         android:id="@+id/originalText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Original Text"
         android:textSize="20sp"
-        android:textStyle="italic|bold"/>
-
+        android:textStyle="italic"/>
     <TextView
-        android:id="@+id/translatedText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Translated Text"
         android:textSize="20sp"
         android:textStyle="bold" />
+    <TextView
+        android:id="@+id/translatedText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Translated Text:"
+        android:textSize="20sp"
+        android:textStyle="italic" />
 
     <TextView
         android:id="@+id/languages"
