@@ -45,10 +45,11 @@ import java.util.ArrayList;
 import java.util.Locale;
   
 public class DashboardFragment extends Fragment {
+    private static final String TAG = "DashboardFragment";
+
     private FragmentDashboardBinding binding;
     private DashboardViewModel dashboardViewModel;
     private TranslationHistoryAdapter historyAdapter;
-
     private SpeechRecognizer speechRecognizer;
     private boolean isListening = false;
 
@@ -135,8 +136,8 @@ public class DashboardFragment extends Fragment {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
                 getContext(), R.array.languages_array, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        binding.idFromSpinner.setAdapter(adapter);
-        binding.idToSpinner.setAdapter(adapter);
+        binding.fromLanguageSpinner.setAdapter(adapter);
+        binding.toLanguageSpinner.setAdapter(adapter);
     }
 
     private void setupMicClickListener() {
@@ -167,10 +168,10 @@ public class DashboardFragment extends Fragment {
             return;
         }
 
-        String selectedLanguage = getSpeechRecognizerLanguageCode(binding.idFromSpinner.getSelectedItem().toString());
+        String selectedLanguage = getSpeechRecognizerLanguageCode(binding.fromLanguageSpinner.getSelectedItem().toString());
 
         if (selectedLanguage == null) {
-            Toast.makeText(getContext(), "Selected language is not supported for speech recognition.", Toast.LENGTH_SHORT).show();
+            showUnsupportedLanguageToast();
             return;
         }
 
@@ -179,10 +180,9 @@ public class DashboardFragment extends Fragment {
         try {
             speechRecognizer.startListening(intent);
             isListening = true;
-            binding.inputTrans.setText(getString(R.string.listening));
+            updateUIForListeningState();
         } catch (Exception e) {
-            binding.inputTrans.setText(getString(R.string.error_starting_listening));
-            isListening = false;
+            handleStartListeningError(e);
         }
     }
 
@@ -192,6 +192,21 @@ public class DashboardFragment extends Fragment {
             isListening = false;
             binding.idIVMic.setImageResource(R.drawable.microphone);
         }
+    }
+
+    private void showUnsupportedLanguageToast() {
+        Toast.makeText(getContext(), getString(R.string.language_not_supported_for_speech), Toast.LENGTH_SHORT).show();
+    }
+
+    private void updateUIForListeningState() {
+        binding.inputTrans.setText(getString(R.string.listening));
+        binding.idIVMic.setImageResource(R.drawable.ic_mic_on);
+    }
+
+    private void handleStartListeningError(Exception e) {
+        binding.inputTrans.setText(getString(R.string.error_starting_listening));
+        isListening = false;
+        Log.e("DashboardFragment", "Error starting speech recognition", e);
     }
 
     private Intent createSpeechRecognizerIntent(String languageCode) {
@@ -215,31 +230,71 @@ public class DashboardFragment extends Fragment {
     }
 
     private void swapSpinnerSelections() {
-        int fromLangPosition = binding.idFromSpinner.getSelectedItemPosition();
-        int toLangPosition = binding.idToSpinner.getSelectedItemPosition();
+        int fromLangPosition = binding.fromLanguageSpinner.getSelectedItemPosition();
+        int toLangPosition = binding.toLanguageSpinner.getSelectedItemPosition();
 
-        binding.idFromSpinner.setSelection(toLangPosition);
-        binding.idToSpinner.setSelection(fromLangPosition);
+        binding.fromLanguageSpinner.setSelection(toLangPosition);
+        binding.toLanguageSpinner.setSelection(fromLangPosition);
+    }
+
+    private void setUIEnabled(boolean enabled) {
+        binding.idBtnTranslation.setEnabled(enabled);
+        binding.idIVMic.setEnabled(enabled);
+        binding.ivSwap.setEnabled(enabled);
+        binding.fromLanguageSpinner.setEnabled(enabled);
+        binding.toLanguageSpinner.setEnabled(enabled);
     }
 
     private void prepareTranslation() {
-        String fromLang = getTranslatorLanguageCode(binding.idFromSpinner.getSelectedItem().toString());
-        String toLang = getTranslatorLanguageCode(binding.idToSpinner.getSelectedItem().toString());
+        String fromLang = getTranslatorLanguageCode(binding.fromLanguageSpinner.getSelectedItem().toString());
+        String toLang = getTranslatorLanguageCode(binding.toLanguageSpinner.getSelectedItem().toString());
+
+        if (dashboardViewModel.getTranslator() != null &&
+                dashboardViewModel.getCurrentSourceLanguage().equals(fromLangCode) &&
+                dashboardViewModel.getCurrentTargetLanguage().equals(toLangCode)) {
+            // Translator is already initialized and ready
+            translateText();
+            return;
+        }
+
+        // Close the previous translator
+        if (dashboardViewModel.getTranslator() != null) {
+            dashboardViewModel.getTranslator().close();
+        }
 
         TranslatorOptions options = new TranslatorOptions.Builder()
-                .setSourceLanguage(fromLang)
-                .setTargetLanguage(toLang)
+                .setSourceLanguage(fromLangCode)
+                .setTargetLanguage(toLangCode)
                 .build();
 
-        dashboardViewModel.setTranslator(Translation.getClient(options));
+        Translator translator = Translation.getClient(options);
+        dashboardViewModel.setTranslator(translator);
+        dashboardViewModel.setCurrentSourceLanguage(fromLangCode);
+        dashboardViewModel.setCurrentTargetLanguage(toLangCode);
 
         DownloadConditions conditions = new DownloadConditions.Builder()
                 .requireWifi()
                 .build();
 
-        dashboardViewModel.getTranslator().downloadModelIfNeeded(conditions)
-                .addOnSuccessListener(unused -> translateText())
-                .addOnFailureListener(e -> Toast.makeText(requireContext(), getString(R.string.model_download_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
+        // Show progress indicator
+        binding.progressBar.setVisibility(View.VISIBLE);
+
+        setUIEnabled(false);
+
+        translator.downloadModelIfNeeded(conditions)
+                .addOnSuccessListener(unused -> {
+                    binding.progressBar.setVisibility(View.GONE);
+                    setUIEnabled(true);
+                    translateText();
+                })
+                .addOnFailureListener(e -> {
+                    binding.progressBar.setVisibility(View.GONE);
+                    setUIEnabled(true);
+                    Toast.makeText(requireContext(),
+                            getString(R.string.model_download_failed) + e.getMessage(),
+                            Toast.LENGTH_SHORT).show();
+                    Log.e(TAG, "Model download failed", e);
+                });
     }
 
     private void translateText() {
@@ -251,7 +306,7 @@ public class DashboardFragment extends Fragment {
         }
 
         dashboardViewModel.getTranslator().translate(textToTranslate)
-                .addOnSuccessListener(translatedText -> dashboardViewModel.setTranslatedText(translatedText, binding.idFromSpinner.getSelectedItem().toString(), binding.idToSpinner.getSelectedItem().toString()))
+                .addOnSuccessListener(translatedText -> dashboardViewModel.setTranslatedText(translatedText, binding.fromLanguageSpinner.getSelectedItem().toString(), binding.idToSpinner.getSelectedItem().toString()))
                 .addOnFailureListener(e -> Toast.makeText(requireContext(), getString(R.string.translation_failed) + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
@@ -372,28 +427,40 @@ public class DashboardFragment extends Fragment {
     }
 
     private String getErrorMessage(int errorCode) {
+        String message;
         switch (errorCode) {
             case SpeechRecognizer.ERROR_AUDIO:
-                return getString(R.string.error_audio);
+                message = getString(R.string.error_audio);
+                break;
             case SpeechRecognizer.ERROR_CLIENT:
-                return getString(R.string.error_client);
+                message = getString(R.string.error_client);
+                break;
             case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                return getString(R.string.error_permissions);
+                message = getString(R.string.error_permissions);
+                break;
             case SpeechRecognizer.ERROR_NETWORK:
-                return getString(R.string.error_network);
+                message = getString(R.string.error_network);
+                break;
             case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                return getString(R.string.error_network_timeout);
+                message = getString(R.string.error_network_timeout);
+                break;
             case SpeechRecognizer.ERROR_NO_MATCH:
-                return getString(R.string.error_no_match);
+                message = getString(R.string.error_no_match);
+                break;
             case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-                return getString(R.string.error_recognizer_busy);
+                message = getString(R.string.error_recognizer_busy);
+                break;
             case SpeechRecognizer.ERROR_SERVER:
-                return getString(R.string.error_server);
+                message = getString(R.string.error_server);
+                break;
             case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                return getString(R.string.error_speech_timeout);
+                message = getString(R.string.error_speech_timeout);
+                break;
             default:
-                return getString(R.string.error_unknown);
+                message = getString(R.string.error_unknown) + " (Code: " + errorCode + ")";
+                break;
         }
+        return message;
     }
 
     @Override
@@ -416,8 +483,7 @@ public class DashboardFragment extends Fragment {
         // Close the translator
         if (dashboardViewModel.getTranslator() != null) {
             dashboardViewModel.getTranslator().close();
+            dashboardViewModel.setTranslator(null);
         }
-        // Nullify binding
-        binding = null;
     }
 }
