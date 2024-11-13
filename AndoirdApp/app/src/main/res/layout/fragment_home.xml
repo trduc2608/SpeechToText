@@ -9,13 +9,8 @@
     android:layout_gravity="center"
     tools:context=".HomeFragment">
 
-    <!-- Logo ở góc trên bên trái -->
-    <ImageView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@drawable/btec1"
-        android:layout_gravity="start"
-        android:layout_margin="16dp" />
+
+
 
     <LinearLayout
         android:orientation="vertical"
