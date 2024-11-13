@@ -1,8 +1,12 @@
 package com.example.sttapp;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -15,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -42,13 +47,13 @@ public class HomeFragment extends Fragment {
     private HomeViewModel homeViewModel;
     private SpeechHistoryAdapter historyAdapter;
 
-
     private SpeechRecognizer speechRecognizer;
     private boolean isRecording = false;
 
     private ActivityResultLauncher<String> requestPermissionLauncher;
 
     private String selectedLanguage = "en-US";
+    private static final String TAG = "HomeFragment";
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -62,24 +67,39 @@ public class HomeFragment extends Fragment {
         // Observe LiveData
         homeViewModel.getRecognizedText().observe(getViewLifecycleOwner(), text -> {
             if (text != null) {
-                binding.textstore.setText(text);
-                Log.d("SpeechRecognition", "Text updated via LiveData observer");
+                binding.recognizedTextView.setText(text);
+                Log.d(TAG, "Text updated via LiveData observer");
             }
         });
 
-        // Initialize Speech Recognizer
-        initializeSpeechRecognizer();
-
-        // Setup Permission Request
-        setupPermissionRequest();
-
-        // Setup UI Components
-        setupLanguageSpinner();
-        setupMicClickListener();
-
-        setupHistoryRecyclerView();
+        initializeComponents();
 
         return binding.getRoot();
+    }
+
+    private void initializeComponents() {
+        initializeSpeechRecognizer();
+        setupPermissionRequest();
+        setupLanguageSpinner();
+        setupMicClickListener();
+        setupHistoryRecyclerView();
+
+        binding.recognizedTextView.setOnLongClickListener(v -> {
+            String text = binding.recognizedTextView.getText().toString();
+            if (!text.isEmpty()) {
+                copyTextToClipboard(text);
+            } else {
+                Toast.makeText(getContext(), getString(R.string.no_text_to_copy), Toast.LENGTH_SHORT).show();
+            }
+            return true;
+        });
+    }
+
+    private void copyTextToClipboard(String text) {
+        ClipboardManager clipboard = (ClipboardManager) requireContext().getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText("Recognized Text", text);
+        clipboard.setPrimaryClip(clip);
+        Toast.makeText(getContext(), getString(R.string.text_copied), Toast.LENGTH_SHORT).show();
     }
 
     private void setupHistoryRecyclerView() {
@@ -118,6 +138,10 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupLanguageSpinner() {
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
+                getContext(), R.array.languages_array, android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.languageSpinner.setAdapter(adapter);
         // Assuming you have set up an adapter for the spinner in your layout
         binding.languageSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -135,17 +159,32 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupMicClickListener() {
-        binding.IVMic.setOnClickListener(v -> toggleSpeechRecognition());
+        binding.micImageView.setOnClickListener(v -> toggleSpeechRecognition());
+    }
+
+    private void updateUIForRecordingState(boolean isRecording) {
+        if (isRecording) {
+            binding.micImageView.setImageResource(R.drawable.ic_mic_on);
+            // Optionally, start an animation
+        } else {
+            binding.micImageView.setImageResource(R.drawable.microphone);
+            // Optionally, stop the animation
+        }
     }
 
     private void toggleSpeechRecognition() {
         if (isRecording) {
             stopListening();
-            binding.IVMic.setImageResource(R.drawable.microphone); // Replace with your mic off icon
         } else {
             startListening();
-            binding.IVMic.setImageResource(R.drawable.ic_mic_on); // Replace with your mic on icon
         }
+        updateUIForRecordingState(isRecording);
+    }
+
+    private boolean isInternetAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) requireContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 
     private void startListening() {
@@ -154,15 +193,23 @@ public class HomeFragment extends Fragment {
             return;
         }
 
+        if (!isInternetAvailable()) {
+            Toast.makeText(getContext(), getString(R.string.no_internet_connection), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         Intent intent = createSpeechRecognizerIntent();
 
         try {
             speechRecognizer.startListening(intent);
             isRecording = true;
-            binding.textstore.setText(getString(R.string.listening));
+            binding.recognizedTextView.setText(getString(R.string.listening));
+            updateUIForRecordingState(true);
         } catch (Exception e) {
-            binding.textstore.setText(getString(R.string.error_starting_listening));
+            binding.recognizedTextView.setText(getString(R.string.error_starting_listening));
             isRecording = false;
+            updateUIForRecordingState(false);
+            Log.e(TAG, "Error starting speech recognition", e);
         }
     }
 
@@ -170,7 +217,7 @@ public class HomeFragment extends Fragment {
         if (isRecording && speechRecognizer != null) {
             speechRecognizer.stopListening();
             isRecording = false;
-            binding.IVMic.setImageResource(R.drawable.microphone); // Reset mic icon
+            updateUIForRecordingState(false);
         }
     }
 
@@ -179,9 +226,6 @@ public class HomeFragment extends Fragment {
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
                 RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, selectedLanguage);
-        // Do not request partial results
-        // intent.putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, false);
-
         return intent;
     }
 
@@ -220,7 +264,7 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onReadyForSpeech(Bundle params) {
-            binding.textstore.setText(getString(R.string.listening));
+            binding.recognizedTextView.setText(getString(R.string.listening));
         }
 
         @Override
@@ -240,33 +284,35 @@ public class HomeFragment extends Fragment {
 
         @Override
         public void onEndOfSpeech() {
-            binding.textstore.setText(getString(R.string.processing));
+            binding.recognizedTextView.setText(getString(R.string.processing));
         }
 
         @Override
         public void onError(int error) {
             String message = getErrorMessage(error);
-            binding.textstore.setText(message);
+            binding.recognizedTextView.setText(message);
             isRecording = false;
-            binding.IVMic.setImageResource(R.drawable.microphone); // Reset mic icon
-            Log.d("SpeechRecognition", "Error occurred: " + message);
+            updateUIForRecordingState(false);
+            Log.e(TAG, "Error occurred: " + message);
         }
 
         @Override
         public void onResults(Bundle results) {
-            if (isAdded()) {
-                ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
-                if (matches != null && !matches.isEmpty()) {
-                    String recognizedText = matches.get(0);
-                    homeViewModel.setRecognizedText(recognizedText); // Update ViewModel and save to history
-                    Log.d("SpeechRecognition", "Recognized Text: " + recognizedText);
-                } else {
-                    binding.textstore.setText(getString(R.string.no_speech_recognized));
-                    Log.d("SpeechRecognition", "No speech recognized");
+            requireActivity().runOnUiThread(() -> {
+                if (isAdded()) {
+                    ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+                    if (matches != null && !matches.isEmpty()) {
+                        String recognizedText = matches.get(0);
+                        homeViewModel.setRecognizedText(recognizedText);
+                        Log.d(TAG, "Recognized Text: " + recognizedText);
+                    } else {
+                        binding.recognizedTextView.setText(getString(R.string.no_speech_recognized));
+                        Log.d(TAG, "No speech recognized");
+                    }
+                    isRecording = false;
+                    updateUIForRecordingState(false);
                 }
-                isRecording = false;
-                binding.IVMic.setImageResource(R.drawable.microphone); // Reset mic icon
-            }
+            });
         }
 
         @Override
@@ -281,28 +327,41 @@ public class HomeFragment extends Fragment {
     }
 
     private String getErrorMessage(int errorCode) {
+        String message;
         switch (errorCode) {
             case SpeechRecognizer.ERROR_AUDIO:
-                return getString(R.string.error_audio);
+                message = getString(R.string.error_audio);
+                break;
             case SpeechRecognizer.ERROR_CLIENT:
-                return getString(R.string.error_client);
+                message = getString(R.string.error_client);
+                break;
             case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS:
-                return getString(R.string.error_permissions);
+                message = getString(R.string.error_permissions);
+                break;
             case SpeechRecognizer.ERROR_NETWORK:
-                return getString(R.string.error_network);
+                message = getString(R.string.error_network);
+                break;
             case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-                return getString(R.string.error_network_timeout);
+                message = getString(R.string.error_network_timeout);
+                break;
             case SpeechRecognizer.ERROR_NO_MATCH:
-                return getString(R.string.error_no_match);
+                message = getString(R.string.error_no_match);
+                break;
             case SpeechRecognizer.ERROR_RECOGNIZER_BUSY:
-                return getString(R.string.error_recognizer_busy);
+                message = getString(R.string.error_recognizer_busy);
+                break;
             case SpeechRecognizer.ERROR_SERVER:
-                return getString(R.string.error_server);
+                message = getString(R.string.error_server);
+                break;
             case SpeechRecognizer.ERROR_SPEECH_TIMEOUT:
-                return getString(R.string.error_speech_timeout);
+                message = getString(R.string.error_speech_timeout);
+                break;
             default:
-                return getString(R.string.error_unknown);
+                message = getString(R.string.error_unknown) + " (Code: " + errorCode + ")";
+                break;
         }
+        Log.e(TAG, "Error Code: " + errorCode + ", Message: " + message);
+        return message;
     }
 
     @Override
@@ -310,7 +369,7 @@ public class HomeFragment extends Fragment {
         super.onPause();
         if (isRecording) {
             stopListening();
-            binding.IVMic.setImageResource(R.drawable.microphone); // Reset mic icon
+            updateUIForRecordingState(false);
         }
     }
 

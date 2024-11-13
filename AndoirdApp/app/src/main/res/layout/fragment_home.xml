@@ -9,13 +9,12 @@
     android:layout_gravity="start"
     tools:context=".HomeFragment">
 
-
     <ImageView
         android:layout_width="123dp"
         android:layout_height="56dp"
         android:layout_gravity="center"
         android:layout_margin="16dp"
-        android:src="@drawable/logo_btec" />
+        android:src="@drawable/logo_btec"/>
 
     <LinearLayout
         android:orientation="vertical"
@@ -29,7 +28,7 @@
             android:layout_height="50dp"
             android:src="@drawable/microphone"
             android:padding="4dp"
-            android:id="@+id/IVMic"
+            android:id="@+id/micImageView"
             android:contentDescription="@string/mic_icon_desc"
             android:layout_gravity="center"
             android:layout_marginTop="20dp"
@@ -54,9 +53,9 @@
             android:entries="@array/languages_array" />
 
         <TextView
+            android:id="@+id/recognizedTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/textstore"
             android:text="@string/say_something_to_show_text"
             android:background="@drawable/edit_text_border"
             android:elevation="3dp"
@@ -76,7 +75,7 @@
         android:id="@+id/historyTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="History"
+        android:text="@string/history"
         android:textSize="18sp"
         android:textStyle="bold"
         android:layout_marginTop="16dp"
