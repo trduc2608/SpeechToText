@@ -20,6 +20,24 @@ public class DashboardViewModel extends AndroidViewModel {
     private final LiveData<List<TranslationHistoryItem>> history;
     private final AppDatabase database;
     private final Executor executor = Executors.newSingleThreadExecutor();
+    private String currentSourceLanguage;
+    private String currentTargetLanguage;
+
+    public String getCurrentSourceLanguage() {
+        return currentSourceLanguage;
+    }
+
+    public void setCurrentSourceLanguage(String currentSourceLanguage) {
+        this.currentSourceLanguage = currentSourceLanguage;
+    }
+
+    public String getCurrentTargetLanguage() {
+        return currentTargetLanguage;
+    }
+
+    public void setCurrentTargetLanguage(String currentTargetLanguage) {
+        this.currentTargetLanguage = currentTargetLanguage;
+    }
 
     public DashboardViewModel(Application application) {
         super(application);
@@ -74,7 +92,7 @@ public class DashboardViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        if (translator != null) {
+if (translator != null) {
             translator.close();
             translator = null;
         }
