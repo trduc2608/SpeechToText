@@ -1,4 +1,4 @@
- package com.example.sttapp;
+package com.example.sttapp;
 
 import android.Manifest;
 import android.content.ClipData;
@@ -156,7 +156,7 @@ public class DashboardFragment extends Fragment {
             stopListening();
             binding.idIVMic.setImageResource(R.drawable.microphone);
         } else {
-            startListening();
+               startListening();
             binding.idIVMic.setImageResource(R.drawable.ic_mic_on);
         }
     }
