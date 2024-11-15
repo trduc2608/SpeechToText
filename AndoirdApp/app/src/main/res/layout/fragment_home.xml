@@ -34,7 +34,6 @@
             android:layout_marginTop="20dp"
             android:background="@drawable/edit_text_border"/>
 
-        <!-- Language Selection Spinner -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -70,7 +69,6 @@
             android:letterSpacing="0.03"/>
     </LinearLayout>
 
-    <!-- History Section -->
     <TextView
         android:id="@+id/historyTitle"
         android:layout_width="match_parent"
