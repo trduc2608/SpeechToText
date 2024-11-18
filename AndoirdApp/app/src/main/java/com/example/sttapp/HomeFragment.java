@@ -206,7 +206,6 @@ public class HomeFragment extends Fragment {
             Log.e(TAG, "Error starting speech recognition", e);
         }
     }
-
     private void stopListening() {
         if (isRecording && speechRecognizer != null) {
             speechRecognizer.stopListening();
@@ -214,7 +213,6 @@ public class HomeFragment extends Fragment {
             updateUIForRecordingState(false);
         }
     }
-
     private Intent createSpeechRecognizerIntent() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
@@ -369,7 +367,6 @@ public class HomeFragment extends Fragment {
             speechRecognizer.destroy();
             speechRecognizer = null;
         }
-        // Nullify binding
         binding = null;
     }
 }
