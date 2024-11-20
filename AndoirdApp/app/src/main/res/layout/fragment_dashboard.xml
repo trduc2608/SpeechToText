@@ -158,8 +158,6 @@
             android:text="@string/save"
             android:textAllCaps="false"
             android:textSize="19sp" />
-
-
         <TextView
             android:id="@+id/historyTitle"
             android:layout_width="match_parent"
