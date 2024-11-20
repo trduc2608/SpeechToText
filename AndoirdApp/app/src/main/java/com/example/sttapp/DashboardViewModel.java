@@ -23,22 +23,6 @@ public class DashboardViewModel extends AndroidViewModel {
     private String currentSourceLanguage;
     private String currentTargetLanguage;
 
-    public String getCurrentSourceLanguage() {
-        return currentSourceLanguage;
-    }
-
-    public void setCurrentSourceLanguage(String currentSourceLanguage) {
-        this.currentSourceLanguage = currentSourceLanguage;
-    }
-
-    public String getCurrentTargetLanguage() {
-        return currentTargetLanguage;
-    }
-
-    public void setCurrentTargetLanguage(String currentTargetLanguage) {
-        this.currentTargetLanguage = currentTargetLanguage;
-    }
-
     public DashboardViewModel(Application application) {
         super(application);
         database = AppDatabase.getInstance(application);
@@ -57,9 +41,8 @@ public class DashboardViewModel extends AndroidViewModel {
         return translatedText;
     }
 
-    public void setTranslatedText(String text, String fromLanguage, String toLanguage) {
+    public void setTranslatedText(String text) {
         translatedText.setValue(text);
-        saveToHistory(inputText.getValue(), text, fromLanguage, toLanguage);
     }
 
     public Translator getTranslator() {
@@ -70,11 +53,27 @@ public class DashboardViewModel extends AndroidViewModel {
         this.translator = translator;
     }
 
+    public String getCurrentSourceLanguage() {
+        return currentSourceLanguage;
+    }
+
+    public void setCurrentSourceLanguage(String currentSourceLanguage) {
+        this.currentSourceLanguage = currentSourceLanguage;
+    }
+
+    public String getCurrentTargetLanguage() {
+        return currentTargetLanguage;
+    }
+
+    public void setCurrentTargetLanguage(String currentTargetLanguage) {
+        this.currentTargetLanguage = currentTargetLanguage;
+    }
+
     public LiveData<List<TranslationHistoryItem>> getHistory() {
         return history;
     }
 
-    private void saveToHistory(String originalText, String translatedText, String fromLanguage, String toLanguage) {
+    public void saveTranslationToHistory(String originalText, String translatedText, String fromLanguage, String toLanguage) {
         if (originalText == null) {
             originalText = "";
         }
@@ -96,7 +95,7 @@ public class DashboardViewModel extends AndroidViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-if (translator != null) {
+        if (translator != null) {
             translator.close();
             translator = null;
         }

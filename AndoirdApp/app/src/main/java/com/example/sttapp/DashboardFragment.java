@@ -62,27 +62,27 @@ public class DashboardFragment extends Fragment {
 
         dashboardViewModel = new ViewModelProvider(this).get(DashboardViewModel.class);
 
+        // Observe LiveData from ViewModel
         dashboardViewModel.getInputText().observe(getViewLifecycleOwner(), text -> binding.inputTextView.setText(text));
         dashboardViewModel.getTranslatedText().observe(getViewLifecycleOwner(), text -> binding.translatedTextView.setText(text));
 
         initializeSpeechRecognizer();
-
         setupPermissionRequest();
-
         setupSpinners();
         setupMicClickListener();
         setupTranslationButton();
         setupSwapButton();
-
+        setupSaveButton();
         setupHistoryRecyclerView();
-binding.translatedTextView.setOnLongClickListener(v -> {
+
+        binding.translatedTextView.setOnLongClickListener(v -> {
             String translatedText = binding.translatedTextView.getText().toString();
             if (!translatedText.isEmpty()) {
                 copyTextToClipboard(translatedText);
             } else {
                 Toast.makeText(getContext(), "No text to copy", Toast.LENGTH_SHORT).show();
             }
-            return true; 
+            return true;
         });
 
         return binding.getRoot();
@@ -97,17 +97,36 @@ binding.translatedTextView.setOnLongClickListener(v -> {
 
     private void setupHistoryRecyclerView() {
         historyAdapter = new TranslationHistoryAdapter(getContext(), item -> {
-
             dashboardViewModel.deleteHistoryItem(item);
         });
         binding.historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.historyRecyclerView.setAdapter(historyAdapter);
 
-
         dashboardViewModel.getHistory().observe(getViewLifecycleOwner(), historyItems -> {
             historyAdapter.setHistoryList(historyItems);
         });
     }
+
+    private void setupSaveButton() {
+        binding.saveBtn.setOnClickListener(v -> saveTranslationToHistory());
+    }
+
+    private void saveTranslationToHistory() {
+        String originalText = binding.inputTextView.getText().toString();
+        String translatedText = binding.translatedTextView.getText().toString();
+        String fromLanguage = binding.fromLanguageSpinner.getSelectedItem().toString();
+        String toLanguage = binding.toLanguageSpinner.getSelectedItem().toString();
+
+        if (originalText.isEmpty() || translatedText.isEmpty()) {
+            Toast.makeText(requireContext(), getString(R.string.nothing_to_save), Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        dashboardViewModel.saveTranslationToHistory(originalText, translatedText, fromLanguage, toLanguage);
+        Toast.makeText(requireContext(), getString(R.string.translation_saved), Toast.LENGTH_SHORT).show();
+    }
+
+    // Removed misplaced methods that belong to DashboardViewModel
 
     private void initializeSpeechRecognizer() {
         Context context = getContext();
@@ -143,7 +162,7 @@ binding.translatedTextView.setOnLongClickListener(v -> {
     }
 
     private void setupTranslationButton() {
-binding.idBtnTranslation.setOnClickListener(v -> prepareTranslation());
+        binding.idBtnTranslation.setOnClickListener(v -> prepareTranslation());
     }
 
     private void setupSwapButton() {
@@ -155,7 +174,7 @@ binding.idBtnTranslation.setOnClickListener(v -> prepareTranslation());
             stopListening();
             binding.micImageView.setImageResource(R.drawable.microphone);
         } else {
-               startListening();
+            startListening();
             binding.micImageView.setImageResource(R.drawable.ic_mic_on);
         }
     }
@@ -222,7 +241,8 @@ binding.idBtnTranslation.setOnClickListener(v -> prepareTranslation());
         return ContextCompat.checkSelfPermission(getContext(), Manifest.permission.RECORD_AUDIO)
                 == PackageManager.PERMISSION_GRANTED;
     }
-private void requestAudioPermission() {
+
+    private void requestAudioPermission() {
         requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
     }
 
@@ -249,11 +269,12 @@ private void requestAudioPermission() {
         if (dashboardViewModel.getTranslator() != null &&
                 fromLangCode.equals(dashboardViewModel.getCurrentSourceLanguage()) &&
                 toLangCode.equals(dashboardViewModel.getCurrentTargetLanguage())) {
-
+            // Translator is already initialized and ready
             translateText();
             return;
         }
 
+        // Close the previous translator
         if (dashboardViewModel.getTranslator() != null) {
             dashboardViewModel.getTranslator().close();
         }
@@ -272,6 +293,7 @@ private void requestAudioPermission() {
                 .requireWifi()
                 .build();
 
+        // Show progress indicator
         binding.progressBar.setVisibility(View.VISIBLE);
 
         setUIEnabled(false);
@@ -300,24 +322,17 @@ private void requestAudioPermission() {
             return;
         }
 
-
         dashboardViewModel.setInputText(textToTranslate);
-
 
         dashboardViewModel.getTranslator().translate(textToTranslate)
                 .addOnSuccessListener(translatedText -> {
-
-                    String fromLanguage = binding.fromLanguageSpinner.getSelectedItem().toString();
-                    String toLanguage = binding.toLanguageSpinner.getSelectedItem().toString();
-
-                    dashboardViewModel.setTranslatedText(translatedText, fromLanguage, toLanguage);
+                    dashboardViewModel.setTranslatedText(translatedText);
                     binding.translatedTextView.setText(translatedText);
                 })
                 .addOnFailureListener(e -> Toast.makeText(requireContext(),
                         getString(R.string.translation_failed) + e.getMessage(),
                         Toast.LENGTH_SHORT).show());
     }
-
 
     private String getSpeechRecognizerLanguageCode(String language) {
         switch (language) {
@@ -332,12 +347,11 @@ private void requestAudioPermission() {
             case "Korean":
                 return "ko-KR";
             case "Chinese":
-                return "zh-CN"; 
+                return "zh-CN";
             default:
                 return null;
         }
     }
-
 
     private String getTranslatorLanguageCode(String language) {
         switch (language) {
@@ -357,7 +371,7 @@ private void requestAudioPermission() {
                 Toast.makeText(requireContext(),
                         getString(R.string.language_not_supported),
                         Toast.LENGTH_SHORT).show();
-                return TranslateLanguage.ENGLISH; 
+                return TranslateLanguage.ENGLISH; // Default to English
         }
     }
 
@@ -370,17 +384,17 @@ private void requestAudioPermission() {
 
         @Override
         public void onBeginningOfSpeech() {
-Log.d("SpeechRecognition", "onBeginningOfSpeech");
+            Log.d("SpeechRecognition", "onBeginningOfSpeech");
         }
 
         @Override
         public void onRmsChanged(float rmsdB) {
-
+            // Implement if needed
         }
 
         @Override
         public void onBufferReceived(byte[] buffer) {
-
+            // Implement if needed
         }
 
         @Override
@@ -395,7 +409,7 @@ Log.d("SpeechRecognition", "onBeginningOfSpeech");
             Log.e("SpeechRecognition", "onError code: " + error + ", message: " + message);
             binding.translatedTextView.setText(message);
             isListening = false;
-            binding.micImageView.setImageResource(R.drawable.microphone); 
+            binding.micImageView.setImageResource(R.drawable.microphone);
         }
 
         @Override
@@ -407,9 +421,9 @@ Log.d("SpeechRecognition", "onBeginningOfSpeech");
                     String recognizedText = matches.get(0);
                     Log.d(TAG, "Recognized Text: " + recognizedText);
                     dashboardViewModel.setInputText(recognizedText);
-
-
-                    prepareTranslation();
+                    binding.inputTextView.setText(recognizedText);
+                    // Do not automatically initiate translation
+                    // The user can click the translate button
                 } else {
                     Log.d(TAG, "No speech recognized");
                     binding.inputTextView.setText(getString(R.string.no_speech_recognized));
@@ -418,7 +432,6 @@ Log.d("SpeechRecognition", "onBeginningOfSpeech");
                 binding.micImageView.setImageResource(R.drawable.microphone);
             });
         }
-
 
         @Override
         public void onPartialResults(Bundle partialResults) {
@@ -430,7 +443,7 @@ Log.d("SpeechRecognition", "onBeginningOfSpeech");
 
         @Override
         public void onEvent(int eventType, Bundle params) {
-
+            // Implement if needed
         }
     }
 
@@ -450,7 +463,7 @@ Log.d("SpeechRecognition", "onBeginningOfSpeech");
                 message = getString(R.string.error_network);
                 break;
             case SpeechRecognizer.ERROR_NETWORK_TIMEOUT:
-message = getString(R.string.error_network_timeout);
+                message = getString(R.string.error_network_timeout);
                 break;
             case SpeechRecognizer.ERROR_NO_MATCH:
                 message = getString(R.string.error_no_match);
@@ -476,7 +489,7 @@ message = getString(R.string.error_network_timeout);
         super.onPause();
         if (isListening) {
             stopListening();
-            binding.micImageView.setImageResource(R.drawable.microphone); 
+            binding.micImageView.setImageResource(R.drawable.microphone);
         }
     }
 
