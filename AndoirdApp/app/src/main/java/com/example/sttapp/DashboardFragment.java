@@ -74,7 +74,6 @@ public class DashboardFragment extends Fragment {
         setupTranslationButton();
         setupSwapButton();
 
-        // Initialize RecyclerView
         setupHistoryRecyclerView();
 binding.translatedTextView.setOnLongClickListener(v -> {
             String translatedText = binding.translatedTextView.getText().toString();
@@ -83,7 +82,7 @@ binding.translatedTextView.setOnLongClickListener(v -> {
             } else {
                 Toast.makeText(getContext(), "No text to copy", Toast.LENGTH_SHORT).show();
             }
-            return true; // Indicate that the event is consumed
+            return true; 
         });
 
         return binding.getRoot();
@@ -98,13 +97,13 @@ binding.translatedTextView.setOnLongClickListener(v -> {
 
     private void setupHistoryRecyclerView() {
         historyAdapter = new TranslationHistoryAdapter(getContext(), item -> {
-            // Delete the item from the database
+
             dashboardViewModel.deleteHistoryItem(item);
         });
         binding.historyRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         binding.historyRecyclerView.setAdapter(historyAdapter);
 
-        // Observe history data
+
         dashboardViewModel.getHistory().observe(getViewLifecycleOwner(), historyItems -> {
             historyAdapter.setHistoryList(historyItems);
         });
@@ -250,12 +249,11 @@ private void requestAudioPermission() {
         if (dashboardViewModel.getTranslator() != null &&
                 fromLangCode.equals(dashboardViewModel.getCurrentSourceLanguage()) &&
                 toLangCode.equals(dashboardViewModel.getCurrentTargetLanguage())) {
-            // Translator is already initialized and ready
+
             translateText();
             return;
         }
 
-        // Close the previous translator
         if (dashboardViewModel.getTranslator() != null) {
             dashboardViewModel.getTranslator().close();
         }
@@ -274,7 +272,6 @@ private void requestAudioPermission() {
                 .requireWifi()
                 .build();
 
-        // Show progress indicator
         binding.progressBar.setVisibility(View.VISIBLE);
 
         setUIEnabled(false);
@@ -296,20 +293,23 @@ private void requestAudioPermission() {
     }
 
     private void translateText() {
-String textToTranslate = binding.inputTextView.getText().toString();
+        String textToTranslate = binding.inputTextView.getText().toString();
 
         if (textToTranslate.isEmpty()) {
             Toast.makeText(requireContext(), getString(R.string.enter_text), Toast.LENGTH_SHORT).show();
             return;
         }
 
+
+        dashboardViewModel.setInputText(textToTranslate);
+
+
         dashboardViewModel.getTranslator().translate(textToTranslate)
                 .addOnSuccessListener(translatedText -> {
-                    // Get selected languages from spinners
+
                     String fromLanguage = binding.fromLanguageSpinner.getSelectedItem().toString();
                     String toLanguage = binding.toLanguageSpinner.getSelectedItem().toString();
 
-                    // Update ViewModel and UI
                     dashboardViewModel.setTranslatedText(translatedText, fromLanguage, toLanguage);
                     binding.translatedTextView.setText(translatedText);
                 })
@@ -318,7 +318,7 @@ String textToTranslate = binding.inputTextView.getText().toString();
                         Toast.LENGTH_SHORT).show());
     }
 
-    // New method for speech recognizer language codes
+
     private String getSpeechRecognizerLanguageCode(String language) {
         switch (language) {
             case "Vietnamese":
@@ -332,13 +332,13 @@ String textToTranslate = binding.inputTextView.getText().toString();
             case "Korean":
                 return "ko-KR";
             case "Chinese":
-                return "zh-CN"; // Simplified Chinese
+                return "zh-CN"; 
             default:
                 return null;
         }
     }
 
-    // Existing method for translator language codes
+
     private String getTranslatorLanguageCode(String language) {
         switch (language) {
             case "Vietnamese":
@@ -357,7 +357,7 @@ String textToTranslate = binding.inputTextView.getText().toString();
                 Toast.makeText(requireContext(),
                         getString(R.string.language_not_supported),
                         Toast.LENGTH_SHORT).show();
-                return TranslateLanguage.ENGLISH; // Default to English
+                return TranslateLanguage.ENGLISH; 
         }
     }
 
@@ -395,7 +395,7 @@ Log.d("SpeechRecognition", "onBeginningOfSpeech");
             Log.e("SpeechRecognition", "onError code: " + error + ", message: " + message);
             binding.translatedTextView.setText(message);
             isListening = false;
-            binding.micImageView.setImageResource(R.drawable.microphone); // Reset mic icon
+            binding.micImageView.setImageResource(R.drawable.microphone); 
         }
 
         @Override
@@ -408,14 +408,14 @@ Log.d("SpeechRecognition", "onBeginningOfSpeech");
                     Log.d(TAG, "Recognized Text: " + recognizedText);
                     dashboardViewModel.setInputText(recognizedText);
 
-                    // Automatically initiate translation after speech is recognized
+
                     prepareTranslation();
                 } else {
                     Log.d(TAG, "No speech recognized");
                     binding.inputTextView.setText(getString(R.string.no_speech_recognized));
                 }
                 isListening = false;
-                binding.micImageView.setImageResource(R.drawable.microphone); // Reset mic icon
+                binding.micImageView.setImageResource(R.drawable.microphone);
             });
         }
 
@@ -476,19 +476,19 @@ message = getString(R.string.error_network_timeout);
         super.onPause();
         if (isListening) {
             stopListening();
-            binding.micImageView.setImageResource(R.drawable.microphone); // Reset mic icon
+            binding.micImageView.setImageResource(R.drawable.microphone); 
         }
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // Release SpeechRecognizer resources
+
         if (speechRecognizer != null) {
             speechRecognizer.destroy();
             speechRecognizer = null;
         }
-        // Close the translator
+
         if (dashboardViewModel.getTranslator() != null) {
             dashboardViewModel.getTranslator().close();
             dashboardViewModel.setTranslator(null);

@@ -27,7 +27,6 @@ public class SpeechHistoryAdapter extends RecyclerView.Adapter<SpeechHistoryAdap
     private List<SpeechHistoryItem> historyList;
     private Context context;
 
-    // Add an interface for item deletion callback
     public interface OnDeleteClickListener {
         void onDeleteClick(SpeechHistoryItem item);
     }
@@ -63,7 +62,6 @@ public class SpeechHistoryAdapter extends RecyclerView.Adapter<SpeechHistoryAdap
             return true;
         });
 
-        // Set up click listener for the Delete button
         holder.deleteButton.setOnClickListener(v -> {
             new AlertDialog.Builder(context)
                     .setTitle("Delete Entry")
