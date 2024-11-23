@@ -46,13 +46,7 @@
     <string name="timestamp">Timestamp</string>
     <string name="recognized_text">Recognized Text</string>
     <string name="language_not_supported_for_speech">Language not supported\n</string>
-    <string name="save">Save\n</string>
-    <string name="nothing_to_save">Nothing to save</string>
-    <string name="translation_saved">Translation saved</string>
-    <string name="history">History</string>
-    <string name="no_text_to_copy">No Text to copy</string>
-    <string name="text_copied">Text Copied</string>
-    <string name="no_internet_connection">No Internet Connection</string>
+
 
     <string-array name="languages_array">
         <item>English</item>
